@@ -48,21 +48,7 @@ export default function Explore() {
           </div>
         )}
 
-        {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="pt-14 pb-4 text-center"
-        >
-          <p className="text-parchment/30 text-sm mb-4">Have a story to tell?</p>
-          <Link
-            to="/new"
-            className="text-gold/60 hover:text-gold transition-colors font-serif text-lg"
-          >
-            Start a piece →
-          </Link>
-        </motion.div>
+        {/* No creator CTA here — viewers read and vote only */}
       </div>
     </main>
   )
@@ -96,7 +82,10 @@ function PieceRow({ piece, index }: { piece: ExplorePiece; index: number }) {
                 Complete
               </span>
             ) : (
-              <span className="text-parchment/25">Between rounds</span>
+              <span className="flex items-center gap-1.5 text-amber-400/70">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-400/70 animate-pulse" />
+                Live Voting
+              </span>
             )}
           </div>
 

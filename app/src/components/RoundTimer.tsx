@@ -36,7 +36,7 @@ export default function RoundTimer({ deadline, label, className }: RoundTimerPro
     return () => clearInterval(interval)
   }, [deadline])
 
-  const isUrgent = time.total > 0 && time.total < 1000 * 60 * 30 // < 30 min
+  const isUrgent = time.total > 0 && time.total < 1000 * 60 * 2 // < 2 min
   const isExpired = time.total <= 0
 
   if (isExpired) {

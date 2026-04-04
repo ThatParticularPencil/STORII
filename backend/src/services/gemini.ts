@@ -1,26 +1,32 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+const MODEL = 'gemini-2.5-flash'
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`
 
-const apiKey = process.env.GEMINI_API_KEY || ''
+async function callGemini(prompt: string): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) throw new Error('GEMINI_API_KEY not set')
 
-let genAI: GoogleGenerativeAI | null = null
+  const res = await fetch(`${API_URL}?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+  })
 
-function getClient(): GoogleGenerativeAI {
-  if (!genAI) {
-    if (!apiKey) throw new Error('GEMINI_API_KEY is not set')
-    genAI = new GoogleGenerativeAI(apiKey)
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Gemini ${res.status}: ${text.slice(0, 200)}`)
   }
-  return genAI
-}
 
-const MODEL = 'gemini-2.0-flash-exp'
+  const data = await res.json()
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
+  if (!text) throw new Error('Gemini returned empty response')
+  return text.trim()
+}
 
 /**
  * Called when a user casts a vote on a direction.
- * Returns a 1–2 sentence literary reaction to what the direction could produce.
+ * Returns a 1–2 sentence literary reaction.
  */
 export async function reactToVote(directionText: string, voteCount: number): Promise<string> {
-  const model = getClient().getGenerativeModel({ model: MODEL })
-
   const prompt = `You are a literary editor watching a live collaborative story unfold.
 
 A community member just voted for this story direction (now at ${voteCount} votes). React in 1–2 sharp sentences — speak like a critic watching something exciting happen. Present tense. No fluff.
@@ -28,25 +34,18 @@ A community member just voted for this story direction (now at ${voteCount} vote
 Direction the community voted for:
 "${directionText.slice(0, 300)}"`
 
-  const result = await model.generateContent(prompt)
-  return result.response.text().trim()
+  return callGemini(prompt)
 }
 
 /**
- * The core function. Called after the community votes and a winning direction is chosen.
- *
- * Takes the winning 50-word direction + the sealed story so far, and generates
- * a full professional video/TV script scene — the official next paragraph.
- *
- * Returns the complete script text that the creator can review and publish on-chain.
+ * The core function. Takes the winning 50-word direction + the sealed story so far,
+ * generates a full professional TV/film script scene as the next paragraph.
  */
 export async function generateScriptFromDirection(
   winningDirection: string,
   storyContext: string,
   pieceTitle: string
 ): Promise<string> {
-  const model = getClient().getGenerativeModel({ model: MODEL })
-
   const prompt = `You are a professional TV drama screenwriter (think HBO, Succession, The Bear).
 
 You are writing the next scene for a collaborative story. The community has voted on a direction — your job is to execute it as a polished, publication-ready script scene.
@@ -74,16 +73,13 @@ Write the next scene. Requirements:
 
 Write only the scene. Nothing else.`
 
-  const result = await model.generateContent(prompt)
-  return result.response.text().trim()
+  return callGemini(prompt)
 }
 
 /**
- * After the script is sealed on-chain, generate a brief literary analysis.
+ * After the script is sealed, generate a brief literary analysis.
  */
 export async function reactToSeal(sealedScript: string, pieceTitle: string): Promise<string> {
-  const model = getClient().getGenerativeModel({ model: MODEL })
-
   const prompt = `You're a literary critic writing a one-paragraph reaction to a scene that was just permanently sealed on the Solana blockchain by community vote.
 
 Story: "${pieceTitle}"
@@ -97,6 +93,5 @@ Write exactly two sentences:
 
 Under 50 words. No headers.`
 
-  const result = await model.generateContent(prompt)
-  return result.response.text().trim()
+  return callGemini(prompt)
 }

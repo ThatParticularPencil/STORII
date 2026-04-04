@@ -5,6 +5,7 @@ import { createServer } from 'http'
 import { Server as IOServer } from 'socket.io'
 
 import piecesRouter from './routes/pieces'
+import * as pieceStore from './services/pieceStore'
 import roundsRouter from './routes/rounds'
 import submissionsRouter from './routes/submissions'
 import subscribersRouter from './routes/subscribers'
@@ -93,6 +94,52 @@ if (solanaListenerEnabled) {
 } else {
   console.log('[solana] listener disabled; running in demo mode')
 }
+
+// ── Seed demo stories ─────────────────────────────────────────────────────────
+
+function seedDemoData() {
+  const MIN = 0.5 / 60  // 30 seconds expressed as hours
+
+  // Demo 1 — open for viewers to submit (1 min submission window, 1 min voting)
+  const p1 = pieceStore.createPiece({
+    id: 'demo-live-1',
+    title: 'It Was the Night Before the Product Launch',
+    creator: '8HQpXR2k...3xRt',
+    openingText: 'It was the night before the product launch and everything was about to go wrong. Sarah stared at the terminal output, the cursor blinking like a nervous heartbeat. Three hours until the presentation. Fourteen minutes of deployment logs. And somewhere in that wall of green text, the reason their entire authentication service had just gone silent.',
+    submissionHours: MIN,
+    votingHours: MIN,
+    maxSubmissions: 20,
+  })
+  // Pre-seed some directions so the pool isn't empty
+  ;[
+    { contributor: '5pNm...8kLj', content: 'Cut to the whole team watching the dashboard refresh. Nobody speaks. The on-call Slack goes silent. Someone outside — a journalist — is already writing the story of the failed launch.' },
+    { contributor: '2wXq...5mRo', content: 'Reveal it was the intern who rotated the deploy keys during the security audit. She didn\'t update the env variables. Her hand is half-raised, voice barely audible. The room temperature drops.' },
+    { contributor: '9cYs...3vPt', content: 'VP calls in on speakerphone. He gives them twenty minutes. Cold voice, past anger. In the background before he hangs up the CEO can be heard asking what "rollback" means.' },
+  ].forEach(s => pieceStore.addSubmission({ pieceId: p1.id, roundIndex: 0, contributor: s.contributor, content: s.content, contentHash: s.contributor }))
+
+  // Demo 2 — voting open, further along in the story (1 min voting window)
+  const p2 = pieceStore.createPiece({
+    id: 'demo-live-2',
+    title: 'The Last Summer at the Observatory',
+    creator: '@stargazer_mila',
+    openingText: 'The dome had not been opened in eleven years. Mila pressed her palm against the cold steel hatch and felt the old mechanism shudder — not quite stuck, not quite willing. The last person to look through this telescope had gone up one August evening and never come back down. Nobody talked about that. The grant committee certainly hadn\'t.',
+    submissionHours: MIN,
+    votingHours: MIN,
+    maxSubmissions: 20,
+  })
+  // Move to voting stage with submissions already in
+  ;[
+    { contributor: 'nR5c...6dLm', content: 'Show what Mila finds on the telescope\'s notepad. The last observer left coordinates — not for any star in any catalogue. Something hand-calculated, obsessively corrected.' },
+    { contributor: 'fT8j...0xBu', content: 'Cut to the grant committee files. One page is redacted. The name of the last observer has been replaced with a case number. Mila recognises the handwriting on the sticky note flagging it.', },
+    { contributor: 'qZ7m...4tPy', content: 'The dome motor starts on its own. Not the hatch — the main rotation drive. Something up there is still running on the old schedule.' },
+    { contributor: 'hV2k...9wQs', content: 'Show the logbook from eleven years ago. Every entry is meticulous science until the last week, where the handwriting changes — smaller, faster, like something was being hidden inside the margin.' },
+  ].forEach(s => pieceStore.addSubmission({ pieceId: p2.id, roundIndex: 0, contributor: s.contributor, content: s.content, contentHash: s.contributor }))
+  pieceStore.moveRoundToVoting(p2.id, 0)
+
+  console.log('[seed] Demo stories seeded:', p1.id, p2.id)
+}
+
+seedDemoData()
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 

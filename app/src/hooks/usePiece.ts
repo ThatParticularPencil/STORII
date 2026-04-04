@@ -25,10 +25,12 @@ export type LiveParagraph = SealedParagraph & {
 export interface LiveActiveRound {
   pubkey:             string
   roundIndex:         number
-  status:             'Submissions' | 'Voting' | 'Closed'
+  status:             'Submissions' | 'Voting' | 'Runoff' | 'Closed'
   submissionDeadline: number  // ms
   votingDeadline:     number  // ms
+  runoffDeadline:     number  // ms
   totalVotes:         number
+  totalRunoffVotes:   number
   submissionCount:    number
   maxSubmissions:     number
   winningSubmission:  string | null
@@ -116,8 +118,10 @@ function apiToPiece(data: any): LivePiece {
     status:             ar.status,
     submissionDeadline: ar.submissionDeadline,
     votingDeadline:     ar.votingDeadline,
-    totalVotes:         ar.totalVotes,
-    submissionCount:    ar.submissionCount,
+    runoffDeadline:     ar.runoffDeadline ?? 0,
+    totalVotes:         ar.totalVotes ?? 0,
+    totalRunoffVotes:   ar.totalRunoffVotes ?? 0,
+    submissionCount:    ar.submissionCount ?? 0,
     maxSubmissions:     ar.maxSubmissions ?? 50,
     winningSubmission:  ar.winningSubmission ?? null,
     creatorNote:        ar.creatorNote ?? '',
