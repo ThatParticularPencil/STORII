@@ -14,70 +14,52 @@ export default function SealedParagraphCard({
   index,
   showChainDetails = false,
 }: SealedParagraphCardProps) {
-  const isOpening = paragraph.isOpening
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.08 }}
-      className="group relative"
+      className="group"
     >
-      {/* Paragraph number */}
-      <div className="flex items-start gap-5">
-        <div className="flex-shrink-0 mt-1.5">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono ${
-            isOpening
-              ? 'bg-gold/20 border border-gold/40 text-gold'
-              : 'bg-parchment/5 border border-parchment/15 text-parchment/40'
-          }`}>
-            {paragraph.index}
-          </div>
+      <div className="flex gap-6 items-start">
+        {/* Part number */}
+        <div className="flex-shrink-0 mt-1">
+          <span className="font-mono text-xs text-parchment/20 tabular-nums">
+            {String(paragraph.index + 1).padStart(2, '0')}
+          </span>
         </div>
 
         <div className="flex-1 min-w-0">
-          {/* Opening tag */}
-          {isOpening && (
-            <div className="text-xs text-gold/60 uppercase tracking-widest mb-2 font-sans">
-              Opening — by creator
-            </div>
-          )}
-
           {/* Paragraph text */}
-          <div className="sealed-paragraph">
-            <p className="font-serif text-parchment/90 leading-8 text-lg">
-              {paragraph.content || '[ Content loading from Arweave... ]'}
-            </p>
-          </div>
+          <p className="font-serif text-parchment/85 leading-[1.85] text-[17px] mb-4">
+            {paragraph.content || '[ Loading from Arweave… ]'}
+          </p>
 
-          {/* Attribution row */}
-          <div className="flex items-center gap-4 mt-3 flex-wrap">
-            <div className="flex items-center gap-1.5">
-              <div className="w-4 h-4 rounded-full bg-parchment/10 border border-parchment/20 flex items-center justify-center">
-                <div className="w-1.5 h-1.5 rounded-full bg-parchment/40" />
-              </div>
-              <span className="text-xs text-parchment/50">
-                {paragraph.authorHandle || shortenAddress(paragraph.author.toString())}
-              </span>
-            </div>
+          {/* Attribution */}
+          <div className="flex items-center gap-4 text-xs text-parchment/30 flex-wrap">
+            <span className="text-parchment/45">
+              {paragraph.authorHandle || shortenAddress(paragraph.author.toString())}
+            </span>
 
-            {!isOpening && (
-              <div className="flex items-center gap-1 text-xs text-parchment/40">
+            {!paragraph.isOpening && (
+              <>
+                <span>·</span>
                 <span>{paragraph.voteCount.toLocaleString()} votes</span>
-              </div>
+              </>
             )}
 
-            <div className="flex items-center gap-1 text-xs text-parchment/30">
-              <Lock size={10} />
-              <span>Sealed on-chain</span>
-            </div>
+            <span>·</span>
+            <span className="flex items-center gap-1">
+              <Lock size={9} />
+              sealed on-chain
+            </span>
 
             {showChainDetails && (
               <a
                 href={explorerAccountUrl(paragraph.author.toString())}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs text-gold/50 hover:text-gold transition-colors ml-auto"
+                className="flex items-center gap-1 text-gold/40 hover:text-gold/70 transition-colors ml-auto"
               >
                 <ExternalLink size={10} />
                 View proof
@@ -85,32 +67,42 @@ export default function SealedParagraphCard({
             )}
           </div>
 
-          {/* Chain details expanded */}
+          {/* Expanded details */}
           {showChainDetails && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
-              className="mt-3 p-3 rounded-lg bg-ink-100/50 border border-parchment/8"
+              className="mt-4 space-y-3"
             >
-              <div className="grid grid-cols-2 gap-2 chain-record">
-                <RecordField label="Author" value={shortenAddress(paragraph.author.toString(), 6)} />
-                <RecordField label="Votes" value={`${paragraph.voteCount} cast`} />
-                <RecordField label="Sealed" value={formatTimestamp(paragraph.sealedAt)} />
-                <RecordField label="Hash" value={`${Array.from(paragraph.contentHash).slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('')}…`} />
+              {/* Winning direction — the original community prompt */}
+              {paragraph.winningDirection && (
+                <div className="p-4 rounded-xl bg-gold/[0.06] border border-gold/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[10px] uppercase tracking-widest text-gold/60 font-medium">Winning direction</span>
+                    <span className="text-[10px] text-parchment/25">· the prompt before Gemini expanded it</span>
+                  </div>
+                  <p className="font-serif italic text-parchment/70 text-sm leading-relaxed">
+                    "{paragraph.winningDirection}"
+                  </p>
+                  <p className="text-xs text-parchment/30 mt-2">
+                    {paragraph.authorHandle} · {paragraph.voteCount.toLocaleString()} votes
+                  </p>
+                </div>
+              )}
+
+              {/* Chain record */}
+              <div className="p-4 rounded-xl bg-parchment/[0.02] border border-parchment/8 font-mono text-xs text-parchment/50 space-y-1.5">
+                <div><span className="text-parchment/30">author </span>{shortenAddress(paragraph.author.toString(), 6)}</div>
+                <div><span className="text-parchment/30">votes  </span>{paragraph.voteCount}</div>
+                <div><span className="text-parchment/30">sealed </span>{formatTimestamp(paragraph.sealedAt)}</div>
+                <div><span className="text-parchment/30">hash   </span>
+                  {Array.from(paragraph.contentHash).slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('')}…
+                </div>
               </div>
             </motion.div>
           )}
         </div>
       </div>
     </motion.div>
-  )
-}
-
-function RecordField({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <span className="key">{label}: </span>
-      <span className="value">{value}</span>
-    </div>
   )
 }

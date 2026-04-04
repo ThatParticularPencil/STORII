@@ -28,93 +28,68 @@ export default function VoteBar({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.1 }}
+      transition={{ duration: 0.35, delay: index * 0.07 }}
       className={clsx(
-        'rounded-xl border p-5 transition-all duration-300',
-        isWinning
-          ? 'border-gold/40 bg-gold/5'
-          : isVotedFor
-          ? 'border-parchment/20 bg-parchment/5'
-          : 'border-parchment/8 bg-white/[0.02]'
+        'rounded-xl border p-4 transition-colors duration-200',
+        isVotedFor
+          ? 'border-parchment/20 bg-parchment/[0.03]'
+          : isWinning
+          ? 'border-gold/25 bg-gold/[0.03]'
+          : 'border-parchment/8 bg-transparent hover:border-parchment/14'
       )}
     >
-      {/* Header row */}
-      <div className="flex items-start justify-between mb-3 gap-4">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-mono text-parchment/40">
-            #{String(index + 1).padStart(2, '0')}
-          </span>
-          <span className="text-xs text-parchment/50">
-            by{' '}
-            <span className="text-parchment/80 font-medium">
-              {submission.contributorHandle}
-            </span>
-          </span>
+      {/* Contributor + vote count */}
+      <div className="flex items-start justify-between mb-2.5 gap-3">
+        <span className="text-xs text-parchment/40">
+          {submission.contributorHandle}
           {isWinning && !hasVoted && (
-            <span className="text-xs bg-gold/20 text-gold border border-gold/30 rounded-full px-2 py-0.5 font-medium">
-              Leading
-            </span>
+            <span className="ml-2 text-gold/60 font-medium">· leading</span>
           )}
-          {isWinning && hasVoted && (
-            <span className="text-xs bg-gold/20 text-gold border border-gold/30 rounded-full px-2 py-0.5 font-medium animate-pulse">
-              Winner
-            </span>
+          {isVotedFor && (
+            <span className="ml-2 text-parchment/40">· your vote</span>
           )}
-        </div>
-
-        <div className="text-right flex-shrink-0">
-          <span className={clsx(
-            'text-lg font-semibold font-mono tabular-nums',
-            isWinning ? 'text-gold' : 'text-parchment/70'
-          )}>
-            {submission.voteCount.toLocaleString()}
-          </span>
-          <span className="text-xs text-parchment/40 ml-1">votes</span>
-        </div>
+        </span>
+        <span className={clsx(
+          'text-sm font-mono font-medium tabular-nums flex-shrink-0',
+          isWinning ? 'text-gold/80' : 'text-parchment/50'
+        )}>
+          {submission.voteCount.toLocaleString()}
+        </span>
       </div>
 
-      {/* Direction text — shown fully, no clamp (max 50 words so always short) */}
-      <p className="text-parchment/85 leading-6 text-[15px] mb-4">
+      {/* Direction text */}
+      <p className="text-parchment/75 leading-relaxed text-sm mb-3">
         {submission.content}
       </p>
 
-      {/* Vote bar */}
-      <div className="mb-4">
-        <div className="flex justify-between items-center text-xs text-parchment/40 mb-1.5">
-          <span>{percentage.toFixed(1)}% of votes</span>
-          <span className="font-mono">{submission.voteCount} / {totalVotes}</span>
+      {/* Progress bar */}
+      {hasVoted && (
+        <div className="mb-3">
+          <div className="h-1 bg-parchment/6 rounded-full overflow-hidden">
+            <motion.div
+              className={clsx(
+                'h-full rounded-full',
+                isWinning ? 'bg-gold/60' : 'bg-parchment/20'
+              )}
+              initial={{ width: 0 }}
+              animate={{ width: `${percentage}%` }}
+              transition={{ duration: 0.9, delay: index * 0.05, ease: 'easeOut' }}
+            />
+          </div>
+          <p className="text-xs text-parchment/25 mt-1">{percentage.toFixed(1)}%</p>
         </div>
-        <div className="h-1.5 bg-parchment/8 rounded-full overflow-hidden">
-          <motion.div
-            className={clsx(
-              'h-full rounded-full',
-              isWinning
-                ? 'bg-gradient-to-r from-gold to-amber-400'
-                : 'bg-gradient-to-r from-parchment/25 to-parchment/40'
-            )}
-            initial={{ width: 0 }}
-            animate={{ width: `${percentage}%` }}
-            transition={{ duration: 1, delay: index * 0.1 + 0.3, ease: 'easeOut' }}
-          />
-        </div>
-      </div>
+      )}
 
       {/* Vote button */}
       {showVoteButton && !hasVoted && onVote && (
         <button
           onClick={() => onVote(submission.id)}
-          className="w-full py-2.5 rounded-lg border border-gold/30 text-gold text-sm font-medium hover:bg-gold/10 hover:border-gold/60 transition-all duration-200 active:scale-[0.98]"
+          className="w-full py-2 rounded-lg border border-parchment/15 text-parchment/50 text-xs font-medium hover:border-gold/30 hover:text-gold/70 hover:bg-gold/[0.04] transition-all duration-200 active:scale-[0.98]"
         >
           Vote for this direction
         </button>
-      )}
-
-      {isVotedFor && (
-        <div className="w-full py-2.5 rounded-lg border border-parchment/15 bg-parchment/5 text-parchment/50 text-sm font-medium text-center">
-          Your vote
-        </div>
       )}
     </motion.div>
   )

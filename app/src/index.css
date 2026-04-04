@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -15,7 +15,7 @@ html {
 
 body {
   @apply bg-ink-900 text-parchment font-sans;
-  background-color: #0a0907;
+  background-color: #0d0b10;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -24,15 +24,19 @@ body {
 /* ── Solana Wallet Adapter overrides ────────────────────────────────────────── */
 
 .wallet-adapter-button {
-  @apply !bg-transparent !border !border-gold/40 !text-parchment !font-sans !text-sm !font-medium !rounded-lg !px-4 !py-2 hover:!border-gold hover:!bg-gold/10 !transition-all !duration-200;
+  @apply !bg-transparent !border !border-parchment/20 !text-parchment/60 !font-sans !text-sm !font-medium !rounded-full !px-5 !py-2 hover:!border-gold/40 hover:!text-parchment hover:!bg-gold/10 !transition-all !duration-200;
+  font-family: 'DM Sans', system-ui, sans-serif !important;
 }
 
 .wallet-adapter-button-trigger {
-  @apply !bg-gold !text-ink-900 !font-semibold hover:!bg-gold-light;
+  @apply !bg-transparent !border !border-parchment/20 !text-parchment/60 hover:!bg-gold/10 hover:!border-gold/40;
 }
 
 .wallet-adapter-modal-wrapper {
-  @apply !bg-ink-50 !border !border-parchment/10;
+  @apply !rounded-2xl;
+  background: #1c1824 !important;
+  border: 1px solid rgba(192, 132, 252, 0.15) !important;
+  font-family: 'DM Sans', system-ui, sans-serif !important;
 }
 
 .wallet-adapter-modal-title {
@@ -40,7 +44,7 @@ body {
 }
 
 .wallet-adapter-modal-list li {
-  @apply hover:!bg-parchment/5;
+  @apply hover:!bg-gold/5 !rounded-xl;
 }
 
 /* ── Custom scrollbar ────────────────────────────────────────────────────────── */
@@ -51,16 +55,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #141210;
+  background: #1c1824;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #4a4035;
+  background: #3d2a5e;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6a5845;
+  background: #5b3d8a;
 }
 
 /* ── Typography ──────────────────────────────────────────────────────────────── */
@@ -76,14 +80,14 @@ body {
 /* ── Glass card ──────────────────────────────────────────────────────────────── */
 
 .glass {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(240, 234, 216, 0.08);
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(192, 132, 252, 0.1);
   backdrop-filter: blur(12px);
 }
 
 .glass-gold {
-  background: rgba(201, 168, 76, 0.05);
-  border: 1px solid rgba(201, 168, 76, 0.2);
+  background: rgba(192, 132, 252, 0.06);
+  border: 1px solid rgba(192, 132, 252, 0.2);
   backdrop-filter: blur(12px);
 }
 
@@ -101,7 +105,7 @@ body {
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(to bottom, transparent, #c9a84c, transparent);
+  background: linear-gradient(to bottom, transparent, #c084fc, transparent);
 }
 
 /* ── Vote bar animation ──────────────────────────────────────────────────────── */
@@ -110,7 +114,7 @@ body {
   height: 100%;
   border-radius: 4px;
   transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-  background: linear-gradient(90deg, #c9a84c 0%, #e0c878 100%);
+  background: linear-gradient(90deg, #c084fc 0%, #f472b6 100%);
 }
 
 /* ── Typewriter cursor ────────────────────────────────────────────────────────── */
@@ -144,7 +148,7 @@ body {
 /* ── Gradient text ────────────────────────────────────────────────────────────── */
 
 .gradient-text {
-  background: linear-gradient(135deg, #f0ead8 0%, #c9a84c 50%, #f0ead8 100%);
+  background: linear-gradient(135deg, #c084fc 0%, #f472b6 50%, #fb923c 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -180,11 +184,12 @@ body {
 /* ── Live dot ─────────────────────────────────────────────────────────────────── */
 
 .live-dot {
-  @apply w-2 h-2 rounded-full bg-green-400;
+  @apply w-2 h-2 rounded-full;
+  background: #f472b6;
   animation: livePulse 1.5s ease-in-out infinite;
 }
 
 @keyframes livePulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
-  50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(244, 114, 182, 0.5); }
+  50% { opacity: 0.75; box-shadow: 0 0 0 6px rgba(244, 114, 182, 0); }
 }

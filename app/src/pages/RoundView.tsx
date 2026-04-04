@@ -228,23 +228,26 @@ function DirectionCard({
       {/* Vote button area */}
       {!hasVoted && (
         isOwn ? (
-          <div className="w-full py-2.5 rounded-lg border border-parchment/10 text-parchment/25 text-xs font-medium text-center flex items-center justify-center gap-1.5">
-            <Ban size={11} />
+          <div className="w-full h-9 rounded-full border border-parchment/8 text-parchment/20 text-xs text-center flex items-center justify-center gap-1.5">
+            <Ban size={10} />
             Can't vote for your own idea
           </div>
         ) : (
-          <button
-            onClick={() => onVote(submission.id)}
-            className="w-full py-2.5 rounded-lg border border-gold/30 text-gold text-sm font-medium hover:bg-gold/10 hover:border-gold/60 transition-all duration-200 active:scale-[0.98]"
-          >
-            Vote for this direction
-          </button>
+          <div>
+            <button
+              onClick={() => onVote(submission.id)}
+              className="w-full h-9 rounded-full border border-gold/35 text-gold text-sm font-medium hover:bg-gold/10 hover:border-gold/60 transition-all duration-200 active:scale-[0.98]"
+            >
+              Vote for this direction
+            </button>
+            <p className="text-center text-xs text-parchment/25 mt-1.5">0.025 SOL</p>
+          </div>
         )
       )}
 
       {isVotedFor && (
-        <div className="w-full py-2.5 rounded-lg border border-parchment/15 bg-parchment/5 text-parchment/45 text-xs font-medium text-center flex items-center justify-center gap-1.5">
-          <CheckCircle2 size={12} /> Your vote
+        <div className="w-full h-9 rounded-full border border-parchment/12 text-parchment/35 text-xs text-center flex items-center justify-center gap-1.5">
+          <CheckCircle2 size={11} /> Voted · 0.025 SOL paid
         </div>
       )}
     </motion.div>
@@ -297,7 +300,7 @@ export default function RoundView() {
         return prev.map(s => s.id === target.id ? { ...s, voteCount: s.voteCount + 1 } : s)
       })
       setTotalVotes(t => t + 1)
-    }, 2200)
+    }, 700)
     return () => clearInterval(interval)
   }, [stage, votedFor, mySubmissionId])
 
@@ -467,8 +470,8 @@ export default function RoundView() {
                         </div>
                         <h3 className="font-serif text-xl text-parchment mb-2">Direction submitted</h3>
                         <p className="text-parchment/45 text-sm mb-5 max-w-xs mx-auto">
-                          Your contribution token was burned. Once submissions close, you'll vote for
-                          someone else's direction — not your own.
+                          0.025 SOL paid · your direction is on-chain. Once submissions close,
+                          you'll vote for someone else's idea (0.025 SOL) — not your own.
                         </p>
                         {/* Show their submitted direction */}
                         <div className="p-4 rounded-xl bg-parchment/5 border border-parchment/10 text-left">
@@ -519,23 +522,35 @@ export default function RoundView() {
                           </div>
                         )}
 
-                        <motion.button
-                          onClick={handleSubmitDirection}
-                          disabled={wordCount < 5 || wordCount > MAX_WORDS || submitting}
-                          whileHover={{ scale: 1.01 }}
-                          whileTap={{ scale: 0.99 }}
-                          className={clsx(
-                            'w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-all',
-                            wordCount >= 5 && wordCount <= MAX_WORDS
-                              ? 'bg-gold text-ink-900 hover:bg-amber-400'
-                              : 'bg-parchment/8 text-parchment/30 cursor-not-allowed'
+                        <div>
+                          <motion.button
+                            onClick={handleSubmitDirection}
+                            disabled={wordCount < 5 || wordCount > MAX_WORDS || submitting}
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                            className={clsx(
+                              'w-full flex items-center justify-center gap-2 h-11 rounded-full font-medium text-sm transition-all',
+                              wordCount >= 5 && wordCount <= MAX_WORDS
+                                ? 'bg-gold text-ink-900 hover:brightness-110'
+                                : 'bg-parchment/6 text-parchment/25 cursor-not-allowed'
+                            )}
+                          >
+                            {submitting ? (
+                              <>
+                                <div className="w-3.5 h-3.5 border-2 border-ink-900/30 border-t-ink-900 rounded-full animate-spin" />
+                                Signing…
+                              </>
+                            ) : (
+                              <>
+                                <Send size={13} />
+                                Submit Direction
+                              </>
+                            )}
+                          </motion.button>
+                          {!submitting && wordCount >= 5 && wordCount <= MAX_WORDS && (
+                            <p className="text-center text-xs text-parchment/25 mt-2">0.025 SOL + gas fee</p>
                           )}
-                        >
-                          {submitting
-                            ? <><div className="w-4 h-4 border-2 border-ink-900/30 border-t-ink-900 rounded-full animate-spin" />Signing…</>
-                            : <><Send size={15} />Submit Direction</>
-                          }
-                        </motion.button>
+                        </div>
                       </>
                     )}
                   </div>
@@ -563,9 +578,9 @@ export default function RoundView() {
                   <div className="p-4 rounded-xl border border-parchment/10 bg-parchment/3 space-y-2">
                     <div className="text-xs uppercase tracking-widest text-parchment/35 mb-2">How it works</div>
                     {[
-                      'Submit your 50-word direction',
+                      'Submit your direction · 0.025 SOL + gas',
                       'Submissions close → all directions go to vote',
-                      'You get 1 vote — for someone else\'s idea only',
+                      'You get 1 vote (0.025 SOL) — for someone else\'s idea only',
                       'Winner → Gemini writes the full scene',
                       'Creator publishes to Solana devnet',
                     ].map((rule, i) => (
@@ -581,9 +596,9 @@ export default function RoundView() {
                     <p className="text-xs text-parchment/35 mb-3">Creator — close submissions</p>
                     <button
                       onClick={handleCloseSubmissions}
-                      className="inline-flex items-center gap-1.5 text-xs border border-gold/30 text-gold px-4 py-2 rounded-lg hover:bg-gold/10 transition-all"
+                      className="inline-flex items-center gap-1.5 text-xs border border-gold/35 text-gold h-8 px-4 rounded-full hover:bg-gold/10 hover:border-gold/60 transition-all"
                     >
-                      <Users size={12} />
+                      <Users size={11} />
                       Close & Open Voting
                     </button>
                   </div>
@@ -687,11 +702,11 @@ export default function RoundView() {
                   </div>
                   <motion.button
                     onClick={handleGenerateScript}
-                    whileHover={{ scale: 1.02 }}
+                    whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
-                    className="flex-shrink-0 inline-flex items-center gap-2 bg-gold text-ink-900 font-semibold text-sm px-5 py-2.5 rounded-lg hover:bg-amber-400 transition-all"
+                    className="flex-shrink-0 inline-flex items-center gap-2 bg-gold text-ink-900 font-medium text-sm h-10 px-5 rounded-full hover:brightness-110 transition-all"
                   >
-                    <Sparkles size={14} />
+                    <Sparkles size={13} />
                     Close Vote → Generate
                   </motion.button>
                 </div>
@@ -761,7 +776,7 @@ export default function RoundView() {
                   {scriptError ? (
                     <div className="text-center py-8">
                       <p className="text-parchment/40 text-sm mb-3">Add GEMINI_API_KEY to backend/.env to enable script generation.</p>
-                      <button onClick={handleGenerateScript} className="text-gold text-sm border border-gold/30 px-4 py-2 rounded-lg hover:bg-gold/10">Retry</button>
+                      <button onClick={handleGenerateScript} className="text-gold text-sm border border-gold/35 h-9 px-5 rounded-full hover:bg-gold/10 transition-all">Retry</button>
                     </div>
                   ) : (
                     <pre className="font-mono text-parchment/85 text-sm leading-7 whitespace-pre-wrap">{generatedScript}</pre>
@@ -794,9 +809,9 @@ export default function RoundView() {
                     onClick={handlePublish}
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
-                    className="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-gold text-ink-900 font-semibold text-base hover:bg-amber-400 transition-all"
+                    className="w-full flex items-center justify-center gap-2 h-11 rounded-full bg-gold text-ink-900 font-medium text-sm hover:brightness-110 transition-all"
                   >
-                    <Zap size={18} />
+                    <Zap size={14} />
                     Publish to Solana Devnet
                   </motion.button>
                 </>

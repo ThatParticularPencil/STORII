@@ -1,67 +1,65 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Lock, Users, BookOpen, ArrowRight, Zap } from 'lucide-react'
+import { Lock, ArrowUpRight } from 'lucide-react'
 import { DEMO_PIECES_EXPLORE } from '@/utils/demo-data'
-import { formatTimestamp } from '@/utils/solana'
 import { clsx } from 'clsx'
 
-const GENRE_COLORS: Record<string, string> = {
-  'Literary Fiction': 'text-sky-400 border-sky-400/30 bg-sky-400/5',
-  'Sci-Fi Thriller': 'text-purple-400 border-purple-400/30 bg-purple-400/5',
-  'Personal Essay': 'text-emerald-400 border-emerald-400/30 bg-emerald-400/5',
-  'Startup Memoir': 'text-amber-400 border-amber-400/30 bg-amber-400/5',
+// First lines for each piece — the hook that makes you want to read
+const PIECE_HOOKS: Record<string, string> = {
+  'demo-piece-1': 'It was the night before the product launch and everything was about to go wrong…',
+  'demo-piece-2': 'The last summer at the observatory began the night Dr. Lena Vasquez found the anomaly she had been told didn\'t exist.',
+  'demo-piece-3': 'Protocol Sigma was never supposed to happen. That\'s what they said at the debrief. That\'s what made it worse.',
+  'demo-piece-4': 'Dear City, I\'m not sure you remember me. I left in March. You didn\'t seem to notice.',
+  'demo-piece-5': 'The first thing you learn when building a company is that everyone is lying to you — including yourself.',
+}
+
+const GENRE_STYLES: Record<string, string> = {
+  'Literary Fiction': 'text-sky-400/70',
+  'Sci-Fi Thriller': 'text-purple-400/70',
+  'Personal Essay': 'text-emerald-400/70',
+  'Startup Memoir': 'text-amber-400/70',
 }
 
 export default function Explore() {
+  const activeCount = DEMO_PIECES_EXPLORE.filter(p => p.activeRound).length
+
   return (
-    <main className="min-h-screen pt-28 pb-24 px-6">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
+    <main className="min-h-screen pt-20 pb-24">
+      <div className="max-w-3xl mx-auto px-6">
+
+        {/* Masthead */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-12"
+          className="pt-10 mb-12 border-b border-parchment/8 pb-8"
         >
-          <div className="text-xs uppercase tracking-widest text-gold/60 mb-3">Community</div>
-          <h1 className="font-serif text-5xl text-parchment mb-3">Explore Pieces</h1>
-          <p className="text-parchment/50 text-lg">
-            Stories being written together, one paragraph at a time.
+          <h1 className="font-serif text-4xl text-parchment mb-2">Stories</h1>
+          <p className="text-parchment/40 text-sm">
+            {activeCount} rounds open · {DEMO_PIECES_EXPLORE.length} pieces
           </p>
         </motion.div>
 
-        {/* Stats bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-3 gap-4 mb-10 p-4 rounded-2xl glass"
-        >
-          <StatItem value="24" label="Active pieces" />
-          <StatItem value="12,840" label="Total votes cast" />
-          <StatItem value="143" label="Sealed paragraphs" />
-        </motion.div>
-
-        {/* Pieces grid */}
-        <div className="space-y-4">
+        {/* Feed */}
+        <div className="divide-y divide-parchment/6">
           {DEMO_PIECES_EXPLORE.map((piece, i) => (
-            <PieceCard key={piece.id} piece={piece} index={i} />
+            <PieceRow key={piece.id} piece={piece} index={i} />
           ))}
         </div>
 
-        {/* Call to action */}
+        {/* CTA */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="mt-16 text-center"
+          className="pt-14 pb-4 text-center"
         >
-          <p className="text-parchment/40 mb-4 text-sm">Want to start your own collaborative story?</p>
-          <Link to="/new">
-            <button className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 text-gold px-6 py-3 rounded-xl font-medium hover:bg-gold/20 transition-all">
-              Start a New Piece
-              <ArrowRight size={16} />
-            </button>
+          <p className="text-parchment/30 text-sm mb-4">Have a story to tell?</p>
+          <Link
+            to="/new"
+            className="text-gold/60 hover:text-gold transition-colors font-serif text-lg"
+          >
+            Start a piece →
           </Link>
         </motion.div>
       </div>
@@ -69,77 +67,66 @@ export default function Explore() {
   )
 }
 
-function StatItem({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="text-center py-2">
-      <div className="text-2xl font-mono font-semibold text-parchment">{value}</div>
-      <div className="text-xs text-parchment/40 mt-1">{label}</div>
-    </div>
-  )
-}
-
-function PieceCard({
+function PieceRow({
   piece,
   index,
 }: {
   piece: (typeof DEMO_PIECES_EXPLORE)[0]
   index: number
 }) {
+  const hook = PIECE_HOOKS[piece.id]
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.08, duration: 0.4 }}
+      transition={{ delay: index * 0.07, duration: 0.4 }}
     >
       <Link to={`/piece/${piece.id}`}>
-        <div className="group glass rounded-2xl p-6 hover:border-parchment/15 transition-all duration-300 cursor-pointer">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              {/* Genre + Status */}
-              <div className="flex items-center gap-2 mb-2.5 flex-wrap">
-                <span
-                  className={clsx(
-                    'text-xs border rounded-full px-2.5 py-0.5',
-                    GENRE_COLORS[piece.genre] || 'text-parchment/40 border-parchment/20 bg-parchment/5'
-                  )}
-                >
-                  {piece.genre}
-                </span>
-                {piece.activeRound && (
-                  <span className="flex items-center gap-1.5 text-xs text-green-400">
-                    <div className="live-dot scale-75" />
-                    Round open
-                  </span>
-                )}
-                {piece.status === 'Complete' && (
-                  <span className="flex items-center gap-1 text-xs text-parchment/40">
-                    <Lock size={10} />
-                    Complete
-                  </span>
-                )}
-              </div>
+        <div className="group py-7 cursor-pointer">
+          {/* Genre + status row */}
+          <div className="flex items-center gap-3 mb-3 text-xs">
+            <span className={clsx('font-medium', GENRE_STYLES[piece.genre] || 'text-parchment/35')}>
+              {piece.genre}
+            </span>
+            <span className="text-parchment/20">·</span>
+            {piece.activeRound ? (
+              <span className="flex items-center gap-1.5 text-green-400/80">
+                <div className="live-dot scale-75" />
+                Round open
+              </span>
+            ) : piece.status === 'Complete' ? (
+              <span className="flex items-center gap-1 text-parchment/25">
+                <Lock size={10} />
+                Complete
+              </span>
+            ) : (
+              <span className="text-parchment/25">Between rounds</span>
+            )}
+          </div>
 
-              <h3 className="font-serif text-xl text-parchment group-hover:text-gold transition-colors mb-1.5">
-                {piece.title}
-              </h3>
+          {/* Title */}
+          <h2 className="font-serif text-xl text-parchment/90 group-hover:text-parchment transition-colors mb-2.5 leading-snug">
+            {piece.title}
+          </h2>
 
-              <div className="flex items-center gap-4 text-xs text-parchment/40 flex-wrap">
-                <span>by {piece.creator}</span>
-                <span className="flex items-center gap-1">
-                  <BookOpen size={11} />
-                  {piece.paragraphCount} sealed paragraphs
-                </span>
-                <span className="flex items-center gap-1">
-                  <Zap size={11} />
-                  {piece.totalVotes.toLocaleString()} total votes
-                </span>
-              </div>
+          {/* Hook line */}
+          {hook && (
+            <p className="font-serif italic text-parchment/35 text-[15px] leading-relaxed mb-4 line-clamp-2">
+              {hook}
+            </p>
+          )}
+
+          {/* Meta + cta */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 text-xs text-parchment/30">
+              <span>by {piece.creator}</span>
+              <span>{piece.paragraphCount} parts sealed</span>
+              <span>{piece.totalVotes.toLocaleString()} votes</span>
             </div>
-
-            <div className="flex-shrink-0 flex flex-col items-end gap-2">
-              <div className="w-10 h-10 rounded-full bg-parchment/5 border border-parchment/10 flex items-center justify-center group-hover:border-gold/30 group-hover:bg-gold/5 transition-all">
-                <ArrowRight size={16} className="text-parchment/30 group-hover:text-gold transition-colors" />
-              </div>
+            <div className="flex items-center gap-1 text-xs text-parchment/25 group-hover:text-gold/60 transition-colors">
+              <span>{piece.activeRound ? 'Read & vote' : 'Read'}</span>
+              <ArrowUpRight size={12} />
             </div>
           </div>
         </div>

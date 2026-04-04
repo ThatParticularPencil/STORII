@@ -50,7 +50,7 @@ export default function NewPiece() {
           <h1 className="font-serif text-3xl text-parchment mb-3">Creators only</h1>
           <p className="text-parchment/50 mb-8 text-sm leading-relaxed">
             Connect your Phantom or Solflare wallet to start a new piece.
-            Only wallet-connected creators can open a piece on Storylock.
+            Only wallet-connected creators can open a piece on Storii.
           </p>
           <WalletMultiButton />
         </div>
@@ -184,9 +184,9 @@ export default function NewPiece() {
                   </div>
                 </div>
               </div>
-              <div className="flex gap-3">
-                <button onClick={goBack} className="px-5 py-3 rounded-xl border border-parchment/15 text-parchment/50 hover:text-parchment/70 transition-all text-sm">
-                  Back
+              <div className="flex items-center gap-4">
+                <button onClick={goBack} className="text-sm text-parchment/35 hover:text-parchment/60 transition-colors">
+                  ← Back
                 </button>
                 <StepButton onClick={goNext} className="flex-1">Continue</StepButton>
               </div>
@@ -229,23 +229,34 @@ export default function NewPiece() {
                 </p>
               </div>
 
-              <div className="flex gap-3">
-                <button onClick={goBack} className="px-5 py-3 rounded-xl border border-parchment/15 text-parchment/50 hover:text-parchment/70 transition-all text-sm">
-                  Back
+              <div className="flex items-center gap-4">
+                <button onClick={goBack} className="text-sm text-parchment/35 hover:text-parchment/60 transition-colors">
+                  ← Back
                 </button>
-                <motion.button
-                  onClick={goNext}
-                  disabled={submitting}
-                  whileHover={{ scale: submitting ? 1 : 1.02 }}
-                  whileTap={{ scale: submitting ? 1 : 0.98 }}
-                  className="flex-1 flex items-center justify-center gap-3 py-4 rounded-xl font-semibold text-base bg-gold text-ink-900 hover:bg-amber-400 transition-all disabled:opacity-60"
-                >
-                  {submitting ? (
-                    <><div className="w-4 h-4 border-2 border-ink-900/30 border-t-ink-900 rounded-full animate-spin" />Creating on Solana…</>
-                  ) : (
-                    <><Lock size={18} />Create Piece</>
+                <div className="flex-1">
+                  <motion.button
+                    onClick={goNext}
+                    disabled={submitting}
+                    whileHover={{ scale: submitting ? 1 : 1.01 }}
+                    whileTap={{ scale: submitting ? 1 : 0.98 }}
+                    className="w-full flex items-center justify-center gap-2 h-11 rounded-full font-medium text-sm bg-gold text-ink-900 hover:brightness-110 transition-all disabled:opacity-40"
+                  >
+                    {submitting ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-ink-900/30 border-t-ink-900 rounded-full animate-spin" />
+                        Creating on Solana…
+                      </>
+                    ) : (
+                      <>
+                        <Lock size={13} />
+                        Create Piece
+                      </>
+                    )}
+                  </motion.button>
+                  {!submitting && (
+                    <p className="text-center text-xs text-parchment/25 mt-2">0.1 SOL + gas fee</p>
                   )}
-                </motion.button>
+                </div>
               </div>
             </StepWrapper>
           )}
@@ -285,19 +296,19 @@ export default function NewPiece() {
                   <span className="text-xs text-parchment/30 ml-2">0 / {MAX_PARAGRAPHS} parts</span>
                 </div>
 
-                <div className="flex gap-3 justify-center">
+                <div className="flex items-center gap-3 justify-center">
                   <button
                     onClick={() => navigate('/dashboard')}
-                    className="px-6 py-3 rounded-xl border border-parchment/20 text-parchment/70 hover:border-parchment/40 text-sm transition-all"
+                    className="h-10 px-5 rounded-full text-sm text-parchment/40 hover:text-parchment/70 border border-parchment/12 hover:border-parchment/25 transition-all"
                   >
                     Dashboard
                   </button>
                   <button
                     onClick={() => navigate('/piece/demo-piece-new')}
-                    className="flex items-center gap-2 bg-gold/15 border border-gold/30 text-gold px-6 py-3 rounded-xl text-sm hover:bg-gold/25 transition-all"
+                    className="flex items-center gap-2 h-10 px-5 rounded-full text-sm bg-gold text-ink-900 hover:brightness-110 font-medium transition-all"
                   >
                     Open Round 1
-                    <ArrowRight size={14} />
+                    <ArrowRight size={13} />
                   </button>
                 </div>
               </motion.div>
@@ -342,16 +353,18 @@ function StepButton({ onClick, disabled, children, className = '' }: {
     <motion.button
       onClick={onClick}
       disabled={disabled}
-      whileHover={{ scale: disabled ? 1 : 1.02 }}
+      whileHover={{ scale: disabled ? 1 : 1.01 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
       className={clsx(
-        'flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-all',
-        disabled ? 'bg-parchment/8 text-parchment/30 cursor-not-allowed' : 'bg-gold text-ink-900 hover:bg-amber-400',
+        'flex items-center justify-center gap-2 h-11 px-6 rounded-full font-medium text-sm transition-all',
+        disabled
+          ? 'bg-parchment/6 text-parchment/25 cursor-not-allowed'
+          : 'bg-gold text-ink-900 hover:brightness-110',
         className
       )}
     >
       {children}
-      {!disabled && <ArrowRight size={16} />}
+      {!disabled && <ArrowRight size={14} />}
     </motion.button>
   )
 }

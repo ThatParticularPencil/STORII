@@ -177,8 +177,8 @@ export const DEMO_SUBMISSIONS = DEMO_STAGE2_SHORTLIST
 export const DEMO_ACTIVE_ROUND = {
   roundIndex: 3,
   status: 'Voting' as const,
-  submissionDeadline: Date.now() - 1000 * 60 * 30,
-  votingDeadline: Date.now() + 1000 * 60 * 60 * 2,
+  submissionDeadline: Date.now() - 1000 * 60 * 2,
+  votingDeadline: Date.now() + 1000 * 60 * 3, // 3 minutes from now — short for demo
   totalVotes: 408,
   submissionCount: 8,
   maxSubmissions: 20,

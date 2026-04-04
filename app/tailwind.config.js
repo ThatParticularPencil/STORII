@@ -5,35 +5,40 @@ export default {
     extend: {
       colors: {
         ink: {
-          DEFAULT: '#0a0907',
-          50: '#1a1815',
-          100: '#141210',
-          900: '#0a0907',
+          DEFAULT: '#0d0b10',
+          50: '#1c1824',
+          100: '#161320',
+          900: '#0d0b10',
         },
         parchment: {
-          DEFAULT: '#f0ead8',
-          muted: '#b8ad97',
-          dim: '#7a7060',
+          DEFAULT: '#f5f0ff',
+          muted: '#c4b8e0',
+          dim: '#8878a8',
         },
         gold: {
-          DEFAULT: '#c9a84c',
-          light: '#e0c878',
-          dark: '#8a6f2c',
-          glow: 'rgba(201,168,76,0.15)',
+          DEFAULT: '#c084fc',
+          light: '#d8b4fe',
+          dark: '#7c3aed',
+          glow: 'rgba(192,132,252,0.2)',
+        },
+        amber: {
+          story: '#fb923c',
+          glow: 'rgba(251,146,60,0.2)',
+        },
+        rose: {
+          storii: '#f472b6',
+          glow: 'rgba(244,114,182,0.2)',
         },
         seal: {
-          DEFAULT: '#8b1a1a',
-          light: '#b52222',
-          glow: 'rgba(139,26,26,0.2)',
-        },
-        emerald: {
-          story: '#1a4a3a',
+          DEFAULT: '#7c3aed',
+          light: '#a855f7',
+          glow: 'rgba(124,58,237,0.25)',
         },
       },
       fontFamily: {
         serif: ['Lora', 'Georgia', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        sans: ['DM Sans', 'system-ui', 'sans-serif'],
+        mono: ['DM Mono', 'monospace'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',

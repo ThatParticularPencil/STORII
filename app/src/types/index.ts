@@ -59,6 +59,7 @@ export interface SealedParagraph {
   // Off-chain enriched
   content?: string
   authorHandle?: string
+  winningDirection?: string  // the original community prompt before Gemini expanded it
 }
 
 export interface SubscriberRecord {
