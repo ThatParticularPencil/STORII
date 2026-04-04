@@ -5,8 +5,11 @@ import {
   Send, AlertCircle, CheckCircle2, Lock, Sparkles,
   FileText, Users, Zap, ChevronRight, Ban,
 } from 'lucide-react'
-import { useWallet } from '@solana/wallet-adapter-react'
+import { useWallet, useConnection } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { sendSolPayment } from '@/utils/solana'
+import { useRole } from '@/context/RoleContext'
+import { Navigate } from 'react-router-dom'
 import VoteBar from '@/components/VoteBar'
 import RoundTimer from '@/components/RoundTimer'
 import OnChainRecord from '@/components/OnChainRecord'
@@ -258,7 +261,12 @@ function DirectionCard({
 
 export default function RoundView() {
   const { roundIndex } = useParams()
-  const { publicKey } = useWallet()
+  const wallet = useWallet()
+  const { publicKey } = wallet
+  const { connection } = useConnection()
+  // Creators cannot vote — this route is already blocked in App.tsx for creators
+  // but guard here too in case of direct URL access
+  const { role } = useRole()
 
   const [stage, setStage] = useState<Stage>('stage1')
 
@@ -273,6 +281,9 @@ export default function RoundView() {
   const [votedFor, setVotedFor] = useState<string | null>(null)
   const [voteReaction, setVoteReaction] = useState<string | null>(null)
   const [voteReactionLoading, setVoteReactionLoading] = useState(false)
+  // Voting deadline — creator can only reduce it, never force-close
+  const [votingDeadline, setVotingDeadline] = useState(DEMO_ACTIVE_ROUND.votingDeadline)
+  const [timeReducing, setTimeReducing] = useState(false)
 
   // Generation
   const [generatedScript, setGeneratedScript] = useState<string | null>(null)
@@ -283,11 +294,34 @@ export default function RoundView() {
   const [txSig, setTxSig] = useState<string | null>(null)
   const [publishStep, setPublishStep] = useState<string | null>(null)
 
+  // Payment errors
+  const [payError, setPayError] = useState<string | null>(null)
+
+  // Hard guard — creators cannot access voting rounds
+  if (role === 'creator') {
+    return <Navigate to="/dashboard" replace />
+  }
+
   const wordCount = draft.trim().split(/\s+/).filter(Boolean).length
   const MAX_WORDS = 50
 
   const sortedPool = [...pool].sort((a, b) => b.voteCount - a.voteCount)
   const winningSubmission = sortedPool[0]
+
+  // Auto-resolve voting when the deadline passes — creator cannot force-close, only reduce time
+  useEffect(() => {
+    if (stage !== 'stage2') return
+    const remaining = votingDeadline - Date.now()
+    if (remaining <= 0) {
+      handleGenerateScript()
+      return
+    }
+    const timer = setTimeout(() => {
+      handleGenerateScript()
+    }, remaining)
+    return () => clearTimeout(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, votingDeadline])
 
   // Live vote simulation during Stage 2 (only for other people's submissions)
   useEffect(() => {
@@ -309,9 +343,19 @@ export default function RoundView() {
   const handleSubmitDirection = async () => {
     if (wordCount < 5 || wordCount > MAX_WORDS || submitting) return
     setSubmitting(true)
-    await new Promise(r => setTimeout(r, 1400))
+    setPayError(null)
 
-    // Add user's direction to the pool with a unique ID
+    try {
+      // Triggers Phantom popup — 0.025 SOL submission fee
+      await sendSolPayment(connection, wallet, 0.025)
+    } catch (err: any) {
+      setPayError(err?.message?.includes('rejected') || err?.message?.includes('cancel')
+        ? 'Transaction cancelled.'
+        : 'Transaction failed — check your SOL balance and try again.')
+      setSubmitting(false)
+      return
+    }
+
     const newId = `my-${Date.now()}`
     const newEntry: DemoSubmission = {
       id: newId,
@@ -332,8 +376,18 @@ export default function RoundView() {
   }
 
   const handleVote = async (id: string) => {
-    // Safety: can't vote for own
     if (id === mySubmissionId) return
+    setPayError(null)
+
+    try {
+      // Triggers Phantom popup — 0.025 SOL vote fee
+      await sendSolPayment(connection, wallet, 0.025)
+    } catch (err: any) {
+      setPayError(err?.message?.includes('rejected') || err?.message?.includes('cancel')
+        ? 'Transaction cancelled.'
+        : 'Transaction failed — check your SOL balance and try again.')
+      return
+    }
 
     const voted = pool.find(s => s.id === id)
     const newCount = (voted?.voteCount ?? 0) + 1
@@ -418,7 +472,7 @@ export default function RoundView() {
               </p>
             </div>
             {stage === 'stage2' && !votedFor && (
-              <RoundTimer deadline={DEMO_ACTIVE_ROUND.votingDeadline} label="Voting closes" className="flex-shrink-0" />
+              <RoundTimer deadline={votingDeadline} label="Voting closes" className="flex-shrink-0" />
             )}
           </div>
         </motion.div>
@@ -522,6 +576,13 @@ export default function RoundView() {
                           </div>
                         )}
 
+                        {payError && (
+                          <div className="flex items-start gap-2 p-3 rounded-lg bg-red-400/5 border border-red-400/15 mb-4 text-xs text-red-400/80">
+                            <AlertCircle size={13} className="mt-0.5 flex-shrink-0" />
+                            {payError}
+                          </div>
+                        )}
+
                         <div>
                           <motion.button
                             onClick={handleSubmitDirection}
@@ -591,16 +652,15 @@ export default function RoundView() {
                     ))}
                   </div>
 
-                  {/* Creator: close submissions */}
-                  <div className="p-4 rounded-xl border border-parchment/10 bg-parchment/3 text-center">
-                    <p className="text-xs text-parchment/35 mb-3">Creator — close submissions</p>
-                    <button
-                      onClick={handleCloseSubmissions}
-                      className="inline-flex items-center gap-1.5 text-xs border border-gold/35 text-gold h-8 px-4 rounded-full hover:bg-gold/10 hover:border-gold/60 transition-all"
-                    >
-                      <Users size={11} />
-                      Close & Open Voting
-                    </button>
+                  {/* Submission info — no creator close */}
+                  <div className="p-4 rounded-xl border border-parchment/10 bg-parchment/[0.02] text-center">
+                    <div className="flex items-center justify-center gap-1.5 mb-1">
+                      <Lock size={11} className="text-parchment/25" />
+                      <p className="text-xs text-parchment/30">Submissions close automatically</p>
+                    </div>
+                    <p className="text-xs text-parchment/20 leading-5">
+                      The window is set on-chain. Once it closes, voting opens for everyone.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -640,6 +700,14 @@ export default function RoundView() {
                   </p>
                 </div>
               </div>
+
+              {/* Payment error */}
+              {payError && (
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-red-400/5 border border-red-400/15 mb-5 text-xs text-red-400/80">
+                  <AlertCircle size={13} className="mt-0.5 flex-shrink-0" />
+                  {payError}
+                </div>
+              )}
 
               {/* Direction cards */}
               <div className="space-y-4 mb-8">
@@ -682,33 +750,46 @@ export default function RoundView() {
                 )}
               </AnimatePresence>
 
-              {/* Creator: close vote → generate */}
-              <div className="p-5 rounded-xl border border-parchment/10 bg-parchment/3">
-                <div className="flex items-start gap-4 flex-wrap">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-parchment/70 mb-1">Creator — Close voting</p>
-                    <p className="text-xs text-parchment/40 leading-5">
-                      Close the vote and send the winning direction to Gemini.
-                      Gemini writes the official scene. You review and publish it to Solana devnet.
+              {/* Creator panel — reduce time only, cannot force-close */}
+              <div className="p-5 rounded-xl border border-parchment/10 bg-parchment/[0.02]">
+                <div className="flex items-center gap-2 mb-1">
+                  <Lock size={12} className="text-parchment/30" />
+                  <p className="text-xs font-medium text-parchment/50">Creator controls</p>
+                </div>
+                <p className="text-xs text-parchment/30 mb-4 leading-5">
+                  Voting cannot be force-closed once live. You can only shorten the remaining time.
+                  The vote auto-resolves when the timer hits zero.
+                </p>
+
+                {winningSubmission && (
+                  <div className="mb-4 p-3 rounded-lg bg-parchment/3 border border-parchment/8">
+                    <span className="text-xs text-parchment/30">Currently leading</span>
+                    <p className="text-parchment/55 text-xs mt-1 italic line-clamp-2">
+                      "{winningSubmission.content}"
                     </p>
-                    {winningSubmission && (
-                      <div className="mt-3 pt-3 border-t border-parchment/8">
-                        <span className="text-xs text-parchment/30">Leading:</span>
-                        <p className="text-parchment/50 text-xs mt-1 italic">
-                          "{winningSubmission.content.slice(0, 90)}…" — {winningSubmission.voteCount} votes
-                        </p>
-                      </div>
-                    )}
+                    <span className="text-xs text-parchment/25 mt-1 block">{winningSubmission.voteCount} votes</span>
                   </div>
-                  <motion.button
-                    onClick={handleGenerateScript}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex-shrink-0 inline-flex items-center gap-2 bg-gold text-ink-900 font-medium text-sm h-10 px-5 rounded-full hover:brightness-110 transition-all"
-                  >
-                    <Sparkles size={13} />
-                    Close Vote → Generate
-                  </motion.button>
+                )}
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs text-parchment/35 flex-shrink-0">Reduce time by:</span>
+                  {[
+                    { label: '−5 min',  ms: 5  * 60 * 1000 },
+                    { label: '−30 min', ms: 30 * 60 * 1000 },
+                    { label: '−1 hr',   ms: 60 * 60 * 1000 },
+                    { label: '−6 hr',   ms: 6  * 60 * 60 * 1000 },
+                  ].map(({ label, ms }) => (
+                    <button
+                      key={label}
+                      disabled={timeReducing}
+                      onClick={() => {
+                        setVotingDeadline(prev => Math.max(Date.now() + 60_000, prev - ms))
+                      }}
+                      className="h-7 px-3 rounded-full text-xs border border-parchment/15 text-parchment/45 hover:border-parchment/30 hover:text-parchment/70 transition-all"
+                    >
+                      {label}
+                    </button>
+                  ))}
                 </div>
               </div>
             </motion.div>

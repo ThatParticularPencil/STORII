@@ -1,21 +1,29 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { motion } from 'framer-motion'
-import { PenLine } from 'lucide-react'
+import { PenLine, RefreshCw } from 'lucide-react'
+import { useRole } from '@/context/RoleContext'
 
 export default function Navbar() {
   const location = useLocation()
   const { publicKey } = useWallet()
+  const { role, clearRole } = useRole()
+  const navigate = useNavigate()
 
   const isActive = (path: string) =>
     location.pathname === path || location.pathname.startsWith(path + '/')
 
+  const handleSwitchRole = () => {
+    clearRole()
+    navigate('/')
+  }
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-ink-900/90 backdrop-blur-md">
       <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-        {/* Logo / Masthead */}
-        <Link to="/" className="flex items-center gap-2.5 group">
+        {/* Logo */}
+        <Link to={role === 'viewer' ? '/explore' : '/'} className="flex items-center gap-2.5 group">
           <div className="w-6 h-6 flex items-center justify-center">
             <LockQuillIcon />
           </div>
@@ -24,24 +32,39 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Nav links — centered */}
+        {/* Nav links — centered, role-aware */}
         <div className="hidden md:flex items-center gap-7 absolute left-1/2 -translate-x-1/2">
-          <NavLink to="/explore" active={isActive('/explore')}>
-            Explore
-          </NavLink>
-          <NavLink to="/dashboard" active={isActive('/dashboard')}>
-            Dashboard
-          </NavLink>
-          {publicKey && (
-            <NavLink to="/new" active={isActive('/new')}>
-              Write
+          {role === 'creator' ? (
+            <>
+              <NavLink to="/dashboard" active={isActive('/dashboard')}>
+                Dashboard
+              </NavLink>
+              {publicKey && (
+                <NavLink to="/new" active={isActive('/new')}>
+                  Write
+                </NavLink>
+              )}
+            </>
+          ) : (
+            <NavLink to="/explore" active={isActive('/explore')}>
+              Stories
             </NavLink>
           )}
         </div>
 
         {/* Right side */}
         <div className="flex items-center gap-3">
-          {publicKey && (
+          {/* Role badge + switch */}
+          <button
+            onClick={handleSwitchRole}
+            className="hidden md:flex items-center gap-1.5 text-xs text-parchment/30 hover:text-parchment/60 transition-colors border border-parchment/10 hover:border-parchment/20 rounded-full h-7 px-3"
+            title="Switch role"
+          >
+            <RefreshCw size={10} />
+            <span className="capitalize">{role}</span>
+          </button>
+
+          {role === 'creator' && publicKey && (
             <Link to="/new">
               <motion.button
                 whileTap={{ scale: 0.96 }}
@@ -52,11 +75,11 @@ export default function Navbar() {
               </motion.button>
             </Link>
           )}
-          <WalletMultiButton />
+
+          {role === 'creator' && <WalletMultiButton />}
         </div>
       </div>
 
-      {/* Bottom border — very subtle */}
       <div className="h-px bg-gradient-to-r from-transparent via-parchment/8 to-transparent" />
     </nav>
   )

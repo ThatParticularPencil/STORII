@@ -158,7 +158,7 @@ function PieceManageCard({
 
       {/* Actions */}
       <div className="px-6 py-4 border-t border-parchment/6 flex items-center gap-3 flex-wrap">
-        <Link to={`/piece/${piece.id}/round/${activeRound.roundIndex}`}>
+        <Link to={`/piece/${piece.id}/creator-round/${activeRound.roundIndex}`}>
           <button className="flex items-center gap-1.5 text-sm text-gold/70 hover:text-gold transition-colors">
             See live votes
             <ArrowRight size={13} />

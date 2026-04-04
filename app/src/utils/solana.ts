@@ -1,4 +1,8 @@
-import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js'
+import {
+  Connection, PublicKey, clusterApiUrl,
+  Transaction, SystemProgram, LAMPORTS_PER_SOL,
+} from '@solana/web3.js'
+import type { WalletContextState } from '@solana/wallet-adapter-react'
 import CryptoJS from 'crypto-js'
 
 // ── Program IDs ───────────────────────────────────────────────────────────────
@@ -75,6 +79,53 @@ export function findSubscriberPDA(
     [Buffer.from('subscriber'), piece.toBuffer(), subscriber.toBuffer()],
     PROGRAM_ID
   )
+}
+
+// ── SOL payment ───────────────────────────────────────────────────────────────
+
+// Treasury wallet — fees are collected here (set VITE_TREASURY_ADDRESS in .env.local)
+export const TREASURY_ADDRESS =
+  import.meta.env.VITE_TREASURY_ADDRESS || '37szWcRN7nT5pckuYvLKNDp3UPQP5mh41VQqRBMTcGhG'
+
+/**
+ * Send a SOL transfer from the connected wallet to the treasury.
+ * Opens Phantom approval popup and waits for confirmation.
+ * Returns the transaction signature.
+ */
+export async function sendSolPayment(
+  connection: Connection,
+  wallet: WalletContextState,
+  amountSol: number
+): Promise<string> {
+  if (!wallet.publicKey || !wallet.sendTransaction) {
+    throw new Error('Wallet not connected')
+  }
+
+  const lamports = Math.round(amountSol * LAMPORTS_PER_SOL)
+  const treasury = new PublicKey(TREASURY_ADDRESS)
+
+  const transaction = new Transaction().add(
+    SystemProgram.transfer({
+      fromPubkey: wallet.publicKey,
+      toPubkey: treasury,
+      lamports,
+    })
+  )
+
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
+  transaction.recentBlockhash = blockhash
+  transaction.feePayer = wallet.publicKey
+
+  // This triggers the Phantom approval popup
+  const signature = await wallet.sendTransaction(transaction, connection)
+
+  // Wait for on-chain confirmation
+  await connection.confirmTransaction(
+    { signature, blockhash, lastValidBlockHeight },
+    'confirmed'
+  )
+
+  return signature
 }
 
 // ── Content hashing ───────────────────────────────────────────────────────────

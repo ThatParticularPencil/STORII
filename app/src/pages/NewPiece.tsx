@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useWallet } from '@solana/wallet-adapter-react'
+import { useWallet, useConnection } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { ArrowRight, CheckCircle2, Lock, AlertCircle, Users, Sparkles, BookOpen } from 'lucide-react'
 import { clsx } from 'clsx'
+import { sendSolPayment } from '@/utils/solana'
 
 export const MAX_PARAGRAPHS = 8
 
@@ -13,7 +14,9 @@ const STEP_ORDER: Step[] = ['title', 'settings', 'confirm', 'done']
 
 export default function NewPiece() {
   const navigate = useNavigate()
-  const { publicKey } = useWallet()
+  const wallet = useWallet()
+  const { publicKey } = wallet
+  const { connection } = useConnection()
 
   const [step, setStep] = useState<Step>('title')
   const [title, setTitle] = useState('')
@@ -21,13 +24,26 @@ export default function NewPiece() {
   const [votingHours, setVotingHours] = useState(24)
   const [maxSubmissions, setMaxSubmissions] = useState(20)
   const [submitting, setSubmitting] = useState(false)
+  const [payError, setPayError] = useState<string | null>(null)
 
   const stepIndex = STEP_ORDER.indexOf(step)
 
   const goNext = async () => {
     if (step === 'confirm') {
       setSubmitting(true)
-      await new Promise(r => setTimeout(r, 2000))
+      setPayError(null)
+
+      try {
+        // Triggers Phantom popup — 0.1 SOL to create the piece
+        await sendSolPayment(connection, wallet, 0.1)
+      } catch (err: any) {
+        setPayError(err?.message?.includes('rejected') || err?.message?.includes('cancel')
+          ? 'Transaction cancelled.'
+          : 'Transaction failed — check your SOL balance and try again.')
+        setSubmitting(false)
+        return
+      }
+
       setSubmitting(false)
       setStep('done')
       return
@@ -222,12 +238,19 @@ export default function NewPiece() {
                 </p>
               </div>
 
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-parchment/5 border border-parchment/10 mb-6">
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-parchment/5 border border-parchment/10 mb-4">
                 <AlertCircle size={13} className="text-parchment/40 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-parchment/40">
                   Estimated gas: ~0.001 SOL to create the piece account on devnet.
                 </p>
               </div>
+
+              {payError && (
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-red-400/5 border border-red-400/15 mb-4 text-xs text-red-400/80">
+                  <AlertCircle size={13} className="mt-0.5 flex-shrink-0" />
+                  {payError}
+                </div>
+              )}
 
               <div className="flex items-center gap-4">
                 <button onClick={goBack} className="text-sm text-parchment/35 hover:text-parchment/60 transition-colors">

@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Lock, ArrowRight, Share2, CheckCircle2 } from 'lucide-react'
+import { Lock, ArrowRight, Share2, CheckCircle2, BarChart2 } from 'lucide-react'
+import { useRole } from '@/context/RoleContext'
 import SealedParagraphCard from '@/components/SealedParagraphCard'
 import OnChainRecord from '@/components/OnChainRecord'
 import RoundTimer from '@/components/RoundTimer'
@@ -31,6 +32,9 @@ export default function PieceView() {
   const { pieceId } = useParams()
   const [showDetails, setShowDetails] = useState(false)
   const [selectedPara, setSelectedPara] = useState<number | null>(null)
+
+  const { role } = useRole()
+  const isCreator = role === 'creator'
 
   const piece = DEMO_PIECE
   const paragraphs = TYPED_PARAGRAPHS
@@ -109,12 +113,19 @@ export default function PieceView() {
           {!isComplete && activeRound && activeRound.status === 'Voting' && (
             <div className="mt-4 flex items-center justify-between p-3 rounded-xl border border-parchment/10 bg-parchment/[0.02]">
               <RoundTimer deadline={activeRound.votingDeadline} label="Voting closes" />
-              <Link to={`/piece/${pieceId}/round/${activeRound.roundIndex}`}>
-                <button className="flex items-center gap-1.5 text-xs text-gold/70 hover:text-gold transition-colors font-medium">
-                  Vote now
-                  <ArrowRight size={12} />
-                </button>
-              </Link>
+              {isCreator ? (
+                <span className="flex items-center gap-1.5 text-xs text-parchment/30">
+                  <BarChart2 size={11} />
+                  {activeRound.totalVotes.toLocaleString()} votes live
+                </span>
+              ) : (
+                <Link to={`/piece/${pieceId}/round/${activeRound.roundIndex}`}>
+                  <button className="flex items-center gap-1.5 text-xs text-gold/70 hover:text-gold transition-colors font-medium">
+                    Vote now
+                    <ArrowRight size={12} />
+                  </button>
+                </Link>
+              )}
             </div>
           )}
         </motion.div>
@@ -145,14 +156,28 @@ export default function PieceView() {
             className="mb-14"
           >
             <p className="font-serif italic text-parchment/25 text-lg mb-4">
-              What happens next is being decided right now…
+              {isCreator
+                ? 'Your community is deciding what happens next…'
+                : 'What happens next is being decided right now…'
+              }
             </p>
-            <Link to={`/piece/${pieceId}/round/${activeRound.roundIndex}`}>
-              <button className="flex items-center gap-2 text-sm text-gold/60 hover:text-gold transition-colors">
-                Read & vote on Round {activeRound.roundIndex + 1}
-                <ArrowRight size={13} />
-              </button>
-            </Link>
+            {isCreator ? (
+              <div className="flex items-center gap-5 text-xs text-parchment/30">
+                <span className="flex items-center gap-1.5">
+                  <BarChart2 size={11} />
+                  {activeRound.totalVotes.toLocaleString()} votes cast
+                </span>
+                <span>{activeRound.submissionCount} directions submitted</span>
+                <span className="text-parchment/20">Round {activeRound.roundIndex + 1} in progress</span>
+              </div>
+            ) : (
+              <Link to={`/piece/${pieceId}/round/${activeRound.roundIndex}`}>
+                <button className="flex items-center gap-2 text-sm text-gold/60 hover:text-gold transition-colors">
+                  Read & vote on Round {activeRound.roundIndex + 1}
+                  <ArrowRight size={13} />
+                </button>
+              </Link>
+            )}
           </motion.div>
         )}
 
