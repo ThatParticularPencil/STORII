@@ -28,7 +28,7 @@ function AppRoutes() {
   }
 
   return (
-    <div className="noise-overlay min-h-screen bg-ink-900">
+    <div className="min-h-screen bg-canvas relative">
       <Navbar />
       <AnimatePresence mode="wait">
         <Routes>

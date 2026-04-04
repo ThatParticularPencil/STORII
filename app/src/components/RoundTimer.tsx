@@ -42,21 +42,21 @@ export default function RoundTimer({ deadline, label, className }: RoundTimerPro
   if (isExpired) {
     return (
       <div className={clsx('flex items-center gap-2', className)}>
-        <div className="w-2 h-2 rounded-full bg-parchment/30" />
-        <span className="text-sm text-parchment/50">{label} — Closed</span>
+        <div className="w-2 h-2 rounded-full bg-ink-tertiary" />
+        <span className="text-sm text-ink-tertiary">{label} — Closed</span>
       </div>
     )
   }
 
   return (
     <div className={clsx('flex items-center gap-3', className)}>
-      <div className={clsx('live-dot', isUrgent && 'bg-amber-400')} />
-      <span className="text-xs text-parchment/50 uppercase tracking-wider">{label}</span>
+      <div className={clsx('live-dot', isUrgent && '!bg-amber-500')} />
+      <span className="text-label uppercase tracking-[0.08em] text-ink-tertiary">{label}</span>
       <div className="flex items-center gap-1">
         <TimeUnit value={time.hours} label="h" urgent={isUrgent} />
-        <span className="text-parchment/30 text-sm">:</span>
+        <span className="text-ink-tertiary text-sm">:</span>
         <TimeUnit value={time.minutes} label="m" urgent={isUrgent} />
-        <span className="text-parchment/30 text-sm">:</span>
+        <span className="text-ink-tertiary text-sm">:</span>
         <TimeUnit value={time.seconds} label="s" urgent={isUrgent} />
       </div>
     </div>
@@ -79,12 +79,12 @@ function TimeUnit({
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.15 }}
       className={clsx(
-        'font-mono text-sm font-medium min-w-[1.8rem] text-center',
-        urgent ? 'text-amber-400' : 'text-parchment/80'
+        'font-mono text-sm font-bold min-w-[1.8rem] text-center',
+        urgent ? 'text-amber-600' : 'text-ink'
       )}
     >
       {String(value).padStart(2, '0')}
-      <span className={clsx('text-xs ml-0.5', urgent ? 'text-amber-400/60' : 'text-parchment/30')}>
+      <span className={clsx('text-xs ml-0.5', urgent ? 'text-amber-500' : 'text-ink-tertiary')}>
         {label}
       </span>
     </motion.div>

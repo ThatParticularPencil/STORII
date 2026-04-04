@@ -4,50 +4,47 @@ export default {
   theme: {
     extend: {
       colors: {
+        canvas: '#FFFBEB',
+        paper: '#FFFFFF',
+        parchment: '#F5F0E8',
         ink: {
-          DEFAULT: '#0d0b10',
-          50: '#1c1824',
-          100: '#161320',
-          900: '#0d0b10',
+          DEFAULT: '#1A1A17',
+          secondary: '#6B6B63',
+          tertiary: '#A3A299',
         },
-        parchment: {
-          DEFAULT: '#f5f0ff',
-          muted: '#c4b8e0',
-          dim: '#8878a8',
-        },
-        gold: {
-          DEFAULT: '#c084fc',
-          light: '#d8b4fe',
-          dark: '#7c3aed',
-          glow: 'rgba(192,132,252,0.2)',
-        },
-        amber: {
-          story: '#fb923c',
-          glow: 'rgba(251,146,60,0.2)',
-        },
-        rose: {
-          storii: '#f472b6',
-          glow: 'rgba(244,114,182,0.2)',
+        sage: {
+          DEFAULT: '#6B8F71',
+          light: '#D4E8D7',
+          dark: '#4A6B4F',
         },
         seal: {
-          DEFAULT: '#7c3aed',
-          light: '#a855f7',
-          glow: 'rgba(124,58,237,0.25)',
+          DEFAULT: '#8B6914',
+          light: '#F0E6C8',
         },
+        straw: '#E5DFD3',
+        overlay: 'rgba(26,26,23,0.4)',
       },
       fontFamily: {
-        serif: ['Lora', 'Georgia', 'serif'],
-        sans: ['DM Sans', 'system-ui', 'sans-serif'],
-        mono: ['DM Mono', 'monospace'],
+        mono: ['"Space Mono"', 'monospace'],
+        serif: ['"Source Serif 4"', 'Georgia', 'serif'],
+      },
+      fontSize: {
+        'display-lg': ['48px', { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'display-md': ['36px', { lineHeight: '1.15', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'headline': ['24px', { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'body-lg': ['18px', { lineHeight: '1.85', fontWeight: '400' }],
+        'body-md': ['16px', { lineHeight: '1.6', fontWeight: '400' }],
+        'label': ['11px', { lineHeight: '1.4', letterSpacing: '0.08em', fontWeight: '400' }],
+      },
+      borderRadius: {
+        DEFAULT: '8px',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.4s ease-out',
-        'pulse-gold': 'pulseGold 2s ease-in-out infinite',
-        'typewriter': 'typewriter 0.05s steps(1) forwards',
         'seal-stamp': 'sealStamp 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
         'vote-fill': 'voteFill 0.8s ease-out forwards',
-        'shimmer': 'shimmer 2s linear infinite',
+        'dot-breathe': 'dotBreathe 4s ease-in-out infinite',
         'float': 'float 3s ease-in-out infinite',
       },
       keyframes: {
@@ -59,10 +56,6 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(20px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
-        pulseGold: {
-          '0%, 100%': { boxShadow: '0 0 0 0 rgba(201,168,76,0.4)' },
-          '50%': { boxShadow: '0 0 0 8px rgba(201,168,76,0)' },
-        },
         sealStamp: {
           '0%': { transform: 'scale(0) rotate(-15deg)', opacity: '0' },
           '60%': { transform: 'scale(1.15) rotate(3deg)', opacity: '1' },
@@ -72,18 +65,14 @@ export default {
           '0%': { width: '0%' },
           '100%': { width: 'var(--vote-width)' },
         },
-        shimmer: {
-          '0%': { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
+        dotBreathe: {
+          '0%, 100%': { opacity: '0.08' },
+          '50%': { opacity: '0.15' },
         },
         float: {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%': { transform: 'translateY(-8px)' },
         },
-      },
-      backgroundImage: {
-        'noise': "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E\")",
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
       },
     },
   },

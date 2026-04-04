@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,37 +13,44 @@ html {
 }
 
 body {
-  @apply bg-ink-900 text-parchment font-sans;
-  background-color: #0d0b10;
+  @apply bg-canvas text-ink font-mono;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+}
+
+/* ── Dot grid breathe (used by DotPattern component) ────────────────────── */
+
+@keyframes dotBreathe {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1;   }
 }
 
 /* ── Solana Wallet Adapter overrides ────────────────────────────────────────── */
 
 .wallet-adapter-button {
-  @apply !bg-transparent !border !border-parchment/20 !text-parchment/60 !font-sans !text-sm !font-medium !rounded-full !px-5 !py-2 hover:!border-gold/40 hover:!text-parchment hover:!bg-gold/10 !transition-all !duration-200;
-  font-family: 'DM Sans', system-ui, sans-serif !important;
+  @apply !bg-transparent !border !border-straw !text-ink-secondary !font-mono !text-sm !font-normal !rounded-[8px] !px-5 !py-2 hover:!border-sage hover:!text-ink hover:!bg-sage-light/30 !transition-all !duration-200;
+  font-family: 'Space Mono', monospace !important;
 }
 
 .wallet-adapter-button-trigger {
-  @apply !bg-transparent !border !border-parchment/20 !text-parchment/60 hover:!bg-gold/10 hover:!border-gold/40;
+  @apply !bg-transparent !border !border-straw !text-ink-secondary hover:!bg-sage-light/30 hover:!border-sage;
 }
 
 .wallet-adapter-modal-wrapper {
-  @apply !rounded-2xl;
-  background: #1c1824 !important;
-  border: 1px solid rgba(192, 132, 252, 0.15) !important;
-  font-family: 'DM Sans', system-ui, sans-serif !important;
+  @apply !rounded-[8px];
+  background: #FFFFFF !important;
+  border: 1px solid #E5DFD3 !important;
+  font-family: 'Space Mono', monospace !important;
 }
 
 .wallet-adapter-modal-title {
-  @apply !text-parchment !font-serif;
+  @apply !text-ink !font-mono !font-bold;
 }
 
 .wallet-adapter-modal-list li {
-  @apply hover:!bg-gold/5 !rounded-xl;
+  @apply hover:!bg-sage-light/30 !rounded-[8px];
 }
 
 /* ── Custom scrollbar ────────────────────────────────────────────────────────── */
@@ -55,57 +61,33 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1c1824;
+  background: #F5F0E8;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3d2a5e;
+  background: #D4CFBC;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #5b3d8a;
+  background: #A3A299;
 }
 
 /* ── Typography ──────────────────────────────────────────────────────────────── */
 
 .prose-story {
-  @apply font-serif text-parchment leading-relaxed;
+  @apply font-serif text-ink leading-relaxed;
 }
 
 .prose-story p {
-  @apply mb-4 text-lg leading-8;
-}
-
-/* ── Glass card ──────────────────────────────────────────────────────────────── */
-
-.glass {
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(192, 132, 252, 0.1);
-  backdrop-filter: blur(12px);
-}
-
-.glass-gold {
-  background: rgba(192, 132, 252, 0.06);
-  border: 1px solid rgba(192, 132, 252, 0.2);
-  backdrop-filter: blur(12px);
+  @apply mb-4 text-body-lg;
 }
 
 /* ── Sealed paragraph style ──────────────────────────────────────────────────── */
 
 .sealed-paragraph {
   position: relative;
-  @apply border-l-2 border-gold/40 pl-6 py-2;
-}
-
-.sealed-paragraph::before {
-  content: '';
-  position: absolute;
-  left: -1px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: linear-gradient(to bottom, transparent, #c084fc, transparent);
+  @apply border-l-2 border-seal pl-6 py-2;
 }
 
 /* ── Vote bar animation ──────────────────────────────────────────────────────── */
@@ -114,7 +96,7 @@ body {
   height: 100%;
   border-radius: 4px;
   transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-  background: linear-gradient(90deg, #c084fc 0%, #f472b6 100%);
+  @apply bg-sage;
 }
 
 /* ── Typewriter cursor ────────────────────────────────────────────────────────── */
@@ -122,7 +104,7 @@ body {
 .typewriter-cursor::after {
   content: '|';
   animation: blink 1s step-end infinite;
-  @apply text-gold;
+  @apply text-sage;
 }
 
 @keyframes blink {
@@ -133,63 +115,32 @@ body {
 /* ── On-chain record ─────────────────────────────────────────────────────────── */
 
 .chain-record {
-  font-family: 'JetBrains Mono', monospace;
-  @apply text-xs text-parchment/70 leading-6;
+  font-family: 'Space Mono', monospace;
+  @apply text-xs text-ink-secondary leading-6;
 }
 
 .chain-record .key {
-  @apply text-gold/70;
+  @apply text-seal;
 }
 
 .chain-record .value {
-  @apply text-parchment;
+  @apply text-ink;
 }
 
-/* ── Gradient text ────────────────────────────────────────────────────────────── */
-
-.gradient-text {
-  background: linear-gradient(135deg, #c084fc 0%, #f472b6 50%, #fb923c 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  background-size: 200% 200%;
-  animation: shimmer 4s linear infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* ── Noise overlay ────────────────────────────────────────────────────────────── */
-
-.noise-overlay::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  z-index: 999;
-}
-
-/* ── Paragraph hover ──────────────────────────────────────────────────────────── */
-
-.paragraph-card:hover {
-  @apply border-gold/20;
-  box-shadow: 0 0 30px rgba(201, 168, 76, 0.05);
-}
-
-/* ── Live dot ─────────────────────────────────────────────────────────────────── */
+/* ── Live dot ─────────────────────────────────────────────────────────────── */
 
 .live-dot {
-  @apply w-2 h-2 rounded-full;
-  background: #f472b6;
+  @apply w-2 h-2 rounded-full bg-sage;
   animation: livePulse 1.5s ease-in-out infinite;
 }
 
 @keyframes livePulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(244, 114, 182, 0.5); }
-  50% { opacity: 0.75; box-shadow: 0 0 0 6px rgba(244, 114, 182, 0); }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(107, 143, 113, 0.5); }
+  50% { opacity: 0.75; box-shadow: 0 0 0 6px rgba(107, 143, 113, 0); }
+}
+
+/* ── Label utility ────────────────────────────────────────────────────────── */
+
+.label {
+  @apply font-mono text-label uppercase tracking-[0.08em] text-ink-tertiary;
 }

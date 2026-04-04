@@ -97,15 +97,15 @@ function StageBar({ current }: { current: Stage }) {
             )}>
               <div className={clsx(
                 'w-6 h-6 rounded-full flex items-center justify-center border text-[11px] font-bold transition-all duration-500',
-                done  ? 'bg-gold/20 border-gold/60 text-gold' :
-                active ? 'bg-gold/15 border-gold/50 text-gold ring-2 ring-gold/20' :
-                         'border-parchment/15 text-parchment/25'
+                done  ? 'bg-sage-light/20 border-sage/60 text-sage-dark' :
+                active ? 'bg-sage-light/15 border-sage/50 text-sage-dark ring-2 ring-sage/20' :
+                         'border-straw text-ink-tertiary'
               )}>
                 {done ? <CheckCircle2 size={12} /> : i + 1}
               </div>
               <span className={clsx(
                 'text-xs font-medium whitespace-nowrap hidden sm:block',
-                active ? 'text-gold' : done ? 'text-parchment/50' : 'text-parchment/25'
+                active ? 'text-sage-dark' : done ? 'text-ink-secondary' : 'text-ink-tertiary'
               )}>
                 {step.label}
               </span>
@@ -113,7 +113,7 @@ function StageBar({ current }: { current: Stage }) {
             {i < steps.length - 1 && (
               <div className={clsx(
                 'flex-1 h-px mx-3 transition-all duration-700',
-                done ? 'bg-gold/40' : 'bg-parchment/10'
+                done ? 'bg-sage/40' : 'bg-straw'
               )} />
             )}
           </div>
@@ -153,36 +153,36 @@ function DirectionCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: index * 0.07 }}
       className={clsx(
-        'rounded-xl border p-5 transition-all duration-300',
-        isOwn        ? 'border-parchment/20 bg-parchment/3' :
-        isWinning    ? 'border-gold/40 bg-gold/5'            :
-        isVotedFor   ? 'border-parchment/20 bg-parchment/5'  :
-                       'border-parchment/8 bg-white/[0.02]'
+        'rounded-[8px] border p-5 transition-all duration-300',
+        isOwn        ? 'border-straw bg-parchment/3' :
+        isWinning    ? 'border-sage/40 bg-sage-light/5'            :
+        isVotedFor   ? 'border-straw bg-parchment/5'  :
+                       'border-straw bg-paper'
       )}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3 gap-3">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-mono text-parchment/35">
+          <span className="text-xs font-mono text-ink-tertiary">
             #{String(index + 1).padStart(2, '0')}
           </span>
-          <span className="text-xs text-parchment/50">
-            by <span className="text-parchment/75 font-medium">{submission.contributorHandle}</span>
+          <span className="text-xs text-ink-secondary">
+            by <span className="text-ink font-medium">{submission.contributorHandle}</span>
           </span>
 
           {/* Badges */}
           {isOwn && (
-            <span className="text-xs bg-parchment/10 text-parchment/50 border border-parchment/15 rounded-full px-2 py-0.5 font-medium flex items-center gap-1">
+            <span className="text-xs bg-parchment/10 text-ink-secondary border border-straw rounded-[8px] px-2 py-0.5 font-medium flex items-center gap-1">
               <Ban size={9} /> Your idea
             </span>
           )}
           {isWinning && !isOwn && hasVoted && (
-            <span className="text-xs bg-gold/20 text-gold border border-gold/30 rounded-full px-2 py-0.5 font-medium animate-pulse">
+            <span className="text-xs bg-sage-light/20 text-sage-dark border border-sage/30 rounded-[8px] px-2 py-0.5 font-medium animate-pulse">
               Winner
             </span>
           )}
           {isWinning && !isOwn && !hasVoted && (
-            <span className="text-xs bg-gold/15 text-gold border border-gold/25 rounded-full px-2 py-0.5 font-medium">
+            <span className="text-xs bg-sage-light/15 text-sage-dark border border-sage/25 rounded-[8px] px-2 py-0.5 font-medium">
               Leading
             </span>
           )}
@@ -193,22 +193,22 @@ function DirectionCard({
           <div className="text-right flex-shrink-0">
             <span className={clsx(
               'text-base font-semibold font-mono tabular-nums',
-              isWinning && !isOwn ? 'text-gold' : 'text-parchment/60'
+              isWinning && !isOwn ? 'text-sage-dark' : 'text-ink-secondary'
             )}>
               {submission.voteCount.toLocaleString()}
             </span>
-            <span className="text-xs text-parchment/35 ml-1">votes</span>
+            <span className="text-xs text-ink-tertiary ml-1">votes</span>
           </div>
         )}
       </div>
 
       {/* Direction text */}
-      <p className="text-parchment/82 leading-6 text-[15px] mb-4">{submission.content}</p>
+      <p className="text-ink-secondary leading-6 text-[15px] mb-4">{submission.content}</p>
 
       {/* Vote bar — shown after user has voted */}
       {hasVoted && (
         <div className="mb-4">
-          <div className="flex justify-between text-xs text-parchment/35 mb-1.5">
+          <div className="flex justify-between text-xs text-ink-tertiary mb-1.5">
             <span>{percentage.toFixed(1)}%</span>
             <span className="font-mono">{submission.voteCount} / {totalVotes}</span>
           </div>
@@ -217,8 +217,8 @@ function DirectionCard({
               className={clsx(
                 'h-full rounded-full',
                 isWinning && !isOwn
-                  ? 'bg-gradient-to-r from-gold to-amber-400'
-                  : 'bg-gradient-to-r from-parchment/20 to-parchment/35'
+                  ? 'bg-sage'
+                  : 'bg-ink-tertiary/30'
               )}
               initial={{ width: 0 }}
               animate={{ width: `${percentage}%` }}
@@ -231,7 +231,7 @@ function DirectionCard({
       {/* Vote button area */}
       {!hasVoted && (
         isOwn ? (
-          <div className="w-full h-9 rounded-full border border-parchment/8 text-parchment/20 text-xs text-center flex items-center justify-center gap-1.5">
+          <div className="w-full h-9 rounded-[8px] border border-straw text-ink-tertiary text-xs text-center flex items-center justify-center gap-1.5">
             <Ban size={10} />
             Can't vote for your own idea
           </div>
@@ -239,17 +239,17 @@ function DirectionCard({
           <div>
             <button
               onClick={() => onVote(submission.id)}
-              className="w-full h-9 rounded-full border border-gold/35 text-gold text-sm font-medium hover:bg-gold/10 hover:border-gold/60 transition-all duration-200 active:scale-[0.98]"
+              className="w-full h-9 rounded-[8px] border border-sage/35 text-sage-dark text-sm font-medium hover:bg-sage-light/10 hover:border-sage/60 transition-all duration-200 active:scale-[0.98]"
             >
               Vote for this direction
             </button>
-            <p className="text-center text-xs text-parchment/25 mt-1.5">0.025 SOL</p>
+            <p className="text-center text-xs text-ink-tertiary mt-1.5">0.025 SOL</p>
           </div>
         )
       )}
 
       {isVotedFor && (
-        <div className="w-full h-9 rounded-full border border-parchment/12 text-parchment/35 text-xs text-center flex items-center justify-center gap-1.5">
+        <div className="w-full h-9 rounded-[8px] border border-straw text-ink-tertiary text-xs text-center flex items-center justify-center gap-1.5">
           <CheckCircle2 size={11} /> Voted · 0.025 SOL paid
         </div>
       )}
@@ -456,13 +456,13 @@ export default function RoundView() {
 
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <div className="text-xs text-parchment/40 uppercase tracking-widest mb-2">{DEMO_PIECE.title}</div>
+          <div className="text-xs text-ink-secondary uppercase tracking-[0.08em] mb-2">{DEMO_PIECE.title}</div>
           <div className="flex items-start justify-between gap-6 flex-wrap">
             <div>
-              <h1 className="font-serif text-3xl text-parchment mb-1">
+              <h1 className="font-mono font-bold text-3xl text-ink mb-1">
                 Round {Number(roundIndex ?? 3) + 1}
               </h1>
-              <p className="text-parchment/50 text-sm">
+              <p className="text-ink-secondary text-sm">
                 {stage === 'stage1'     && `${pool.length} directions submitted · submissions open`}
                 {stage === 'stage2'     && `${pool.length} directions · ${totalVotes.toLocaleString()} votes cast · 1 vote per person`}
                 {stage === 'generating' && 'Gemini writing the official scene…'}
@@ -481,14 +481,14 @@ export default function RoundView() {
 
         {/* Story context strip */}
         {stage !== 'published' && (
-          <div className="mb-8 p-5 rounded-xl bg-parchment/3 border border-parchment/8">
-            <div className="text-xs uppercase tracking-widest text-parchment/35 mb-2">
+          <div className="mb-8 p-5 rounded-[8px] bg-parchment/3 border border-straw">
+            <div className="text-xs uppercase tracking-[0.08em] text-ink-tertiary mb-2">
               Story so far — Paragraph {DEMO_PARAGRAPHS.length - 1}
             </div>
-            <p className="font-serif text-parchment/75 leading-7 text-[15px] line-clamp-3">
+            <p className="font-serif text-ink-secondary leading-7 text-[15px] line-clamp-3">
               {DEMO_PARAGRAPHS[DEMO_PARAGRAPHS.length - 1].content}
             </p>
-            <div className="flex items-center gap-2 mt-2 text-xs text-parchment/30">
+            <div className="flex items-center gap-2 mt-2 text-xs text-ink-tertiary">
               <Lock size={10} />
               <span>sealed on Solana</span>
             </div>
@@ -511,7 +511,7 @@ export default function RoundView() {
 
                 {/* Left: submission form */}
                 <div className="lg:col-span-3">
-                  <div className="p-6 rounded-2xl border border-parchment/12 bg-white/[0.02]">
+                  <div className="p-6 rounded-[8px] border border-straw bg-paper">
                     {mySubmissionId ? (
                       // ── Already submitted ──
                       <motion.div
@@ -519,33 +519,33 @@ export default function RoundView() {
                         animate={{ scale: 1, opacity: 1 }}
                         className="text-center py-10"
                       >
-                        <div className="w-14 h-14 rounded-full bg-green-400/10 border border-green-400/25 flex items-center justify-center mx-auto mb-4">
-                          <CheckCircle2 size={24} className="text-green-400" />
+                        <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto mb-4">
+                          <CheckCircle2 size={24} className="text-emerald-600" />
                         </div>
-                        <h3 className="font-serif text-xl text-parchment mb-2">Direction submitted</h3>
-                        <p className="text-parchment/45 text-sm mb-5 max-w-xs mx-auto">
+                        <h3 className="font-mono font-bold text-xl text-ink mb-2">Direction submitted</h3>
+                        <p className="text-ink-secondary text-sm mb-5 max-w-xs mx-auto">
                           0.025 SOL paid · your direction is on-chain. Once submissions close,
                           you'll vote for someone else's idea (0.025 SOL) — not your own.
                         </p>
                         {/* Show their submitted direction */}
-                        <div className="p-4 rounded-xl bg-parchment/5 border border-parchment/10 text-left">
-                          <div className="text-xs text-parchment/30 mb-1.5 uppercase tracking-widest">Your direction</div>
-                          <p className="text-parchment/65 text-sm italic leading-6">"{draft}"</p>
+                        <div className="p-4 rounded-[8px] bg-parchment/5 border border-straw text-left">
+                          <div className="text-xs text-ink-tertiary mb-1.5 uppercase tracking-[0.08em]">Your direction</div>
+                          <p className="text-ink-secondary text-sm italic leading-6">"{draft}"</p>
                         </div>
                       </motion.div>
                     ) : !publicKey ? (
                       <div className="text-center py-10">
-                        <p className="text-parchment/40 text-sm mb-4 font-serif">
+                        <p className="text-ink-secondary text-sm mb-4 font-serif">
                           Connect Phantom or Solflare to participate
                         </p>
                         <WalletMultiButton />
                       </div>
                     ) : (
                       <>
-                        <h2 className="font-serif text-xl text-parchment mb-1">Submit your direction</h2>
-                        <p className="text-parchment/45 text-sm mb-5">
+                        <h2 className="font-mono font-bold text-xl text-ink mb-1">Submit your direction</h2>
+                        <p className="text-ink-secondary text-sm mb-5">
                           In plain language, tell the community where the story should go next.
-                          Max {MAX_WORDS} words. You'll get <strong className="text-parchment/70">one vote</strong> to cast on
+                          Max {MAX_WORDS} words. You'll get <strong className="text-ink">one vote</strong> to cast on
                           someone else's direction — not your own.
                         </p>
 
@@ -554,30 +554,30 @@ export default function RoundView() {
                           onChange={e => setDraft(e.target.value)}
                           placeholder="e.g. Show the junior dev who flagged this bug three weeks ago. His code review comment was dismissed as out of scope. He's still in the room. He hasn't said a word."
                           rows={5}
-                          className="w-full bg-ink-50/40 border border-parchment/15 rounded-xl p-4 text-parchment text-base leading-7 placeholder:text-parchment/20 focus:outline-none focus:border-gold/40 resize-none transition-colors mb-3"
+                          className="w-full bg-paper border border-straw rounded-[8px] p-4 text-ink text-base leading-7 placeholder:text-ink-tertiary focus:outline-none focus:border-sage/40 resize-none transition-colors mb-3"
                         />
 
                         <div className="flex items-center justify-between mb-5">
                           <span className={clsx(
                             'text-xs font-mono tabular-nums',
-                            wordCount > MAX_WORDS ? 'text-red-400' : wordCount >= 5 ? 'text-green-400' : 'text-parchment/35'
+                            wordCount > MAX_WORDS ? 'text-red-600' : wordCount >= 5 ? 'text-emerald-600' : 'text-ink-tertiary'
                           )}>
                             {wordCount} / {MAX_WORDS} words
                           </span>
-                          <span className="text-xs text-parchment/25">
+                          <span className="text-xs text-ink-tertiary">
                             Hash → Solana · Gemini writes the winning scene
                           </span>
                         </div>
 
                         {wordCount > MAX_WORDS && (
-                          <div className="flex items-start gap-2 p-3 rounded-lg bg-red-400/5 border border-red-400/15 mb-4 text-xs text-red-400/80">
+                          <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-200 mb-4 text-xs text-red-600">
                             <AlertCircle size={13} className="mt-0.5 flex-shrink-0" />
                             Over {MAX_WORDS} words — keep it concise.
                           </div>
                         )}
 
                         {payError && (
-                          <div className="flex items-start gap-2 p-3 rounded-lg bg-red-400/5 border border-red-400/15 mb-4 text-xs text-red-400/80">
+                          <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-200 mb-4 text-xs text-red-600">
                             <AlertCircle size={13} className="mt-0.5 flex-shrink-0" />
                             {payError}
                           </div>
@@ -590,15 +590,15 @@ export default function RoundView() {
                             whileHover={{ scale: 1.01 }}
                             whileTap={{ scale: 0.99 }}
                             className={clsx(
-                              'w-full flex items-center justify-center gap-2 h-11 rounded-full font-medium text-sm transition-all',
+                              'w-full flex items-center justify-center gap-2 h-11 rounded-[8px] font-medium text-sm transition-all',
                               wordCount >= 5 && wordCount <= MAX_WORDS
-                                ? 'bg-gold text-ink-900 hover:brightness-110'
-                                : 'bg-parchment/6 text-parchment/25 cursor-not-allowed'
+                                ? 'bg-sage text-white hover:bg-sage-dark'
+                                : 'bg-parchment/6 text-ink-tertiary cursor-not-allowed'
                             )}
                           >
                             {submitting ? (
                               <>
-                                <div className="w-3.5 h-3.5 border-2 border-ink-900/30 border-t-ink-900 rounded-full animate-spin" />
+                                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                 Signing…
                               </>
                             ) : (
@@ -609,7 +609,7 @@ export default function RoundView() {
                             )}
                           </motion.button>
                           {!submitting && wordCount >= 5 && wordCount <= MAX_WORDS && (
-                            <p className="text-center text-xs text-parchment/25 mt-2">0.025 SOL + gas fee</p>
+                            <p className="text-center text-xs text-ink-tertiary mt-2">0.025 SOL + gas fee</p>
                           )}
                         </div>
                       </>
@@ -620,15 +620,15 @@ export default function RoundView() {
                 {/* Right: pool info + creator close button */}
                 <div className="lg:col-span-2 space-y-4">
                   {/* Counter */}
-                  <div className="p-5 rounded-2xl border border-parchment/12 bg-white/[0.02]">
-                    <div className="text-xs uppercase tracking-widest text-parchment/35 mb-2">Submissions</div>
+                  <div className="p-5 rounded-[8px] border border-straw bg-paper">
+                    <div className="text-xs uppercase tracking-[0.08em] text-ink-tertiary mb-2">Submissions</div>
                     <div className="flex items-end gap-2 mb-1">
-                      <span className="text-4xl font-mono font-bold text-parchment">{pool.length}</span>
-                      <span className="text-parchment/35 text-sm mb-1">/ {DEMO_ACTIVE_ROUND.maxSubmissions} max</span>
+                      <span className="text-4xl font-mono font-bold text-ink">{pool.length}</span>
+                      <span className="text-ink-tertiary text-sm mb-1">/ {DEMO_ACTIVE_ROUND.maxSubmissions} max</span>
                     </div>
                     <div className="h-1.5 bg-parchment/8 rounded-full overflow-hidden mt-2">
                       <motion.div
-                        className="h-full bg-gradient-to-r from-gold/50 to-gold rounded-full"
+                        className="h-full bg-sage rounded-full"
                         animate={{ width: `${Math.min((pool.length / DEMO_ACTIVE_ROUND.maxSubmissions) * 100, 100)}%` }}
                         transition={{ duration: 0.6 }}
                       />
@@ -636,8 +636,8 @@ export default function RoundView() {
                   </div>
 
                   {/* Rule callout */}
-                  <div className="p-4 rounded-xl border border-parchment/10 bg-parchment/3 space-y-2">
-                    <div className="text-xs uppercase tracking-widest text-parchment/35 mb-2">How it works</div>
+                  <div className="p-4 rounded-[8px] border border-straw bg-parchment/3 space-y-2">
+                    <div className="text-xs uppercase tracking-[0.08em] text-ink-tertiary mb-2">How it works</div>
                     {[
                       'Submit your direction · 0.025 SOL + gas',
                       'Submissions close → all directions go to vote',
@@ -645,20 +645,20 @@ export default function RoundView() {
                       'Winner → Gemini writes the full scene',
                       'Creator publishes to Solana devnet',
                     ].map((rule, i) => (
-                      <div key={i} className="flex items-start gap-2 text-xs text-parchment/50">
-                        <span className="text-gold/60 font-mono mt-0.5 flex-shrink-0">{i + 1}.</span>
+                      <div key={i} className="flex items-start gap-2 text-xs text-ink-secondary">
+                        <span className="text-sage font-mono mt-0.5 flex-shrink-0">{i + 1}.</span>
                         {rule}
                       </div>
                     ))}
                   </div>
 
                   {/* Submission info — no creator close */}
-                  <div className="p-4 rounded-xl border border-parchment/10 bg-parchment/[0.02] text-center">
+                  <div className="p-4 rounded-[8px] border border-straw bg-parchment/[0.02] text-center">
                     <div className="flex items-center justify-center gap-1.5 mb-1">
-                      <Lock size={11} className="text-parchment/25" />
-                      <p className="text-xs text-parchment/30">Submissions close automatically</p>
+                      <Lock size={11} className="text-ink-tertiary" />
+                      <p className="text-xs text-ink-tertiary">Submissions close automatically</p>
                     </div>
-                    <p className="text-xs text-parchment/20 leading-5">
+                    <p className="text-xs text-ink-tertiary leading-5">
                       The window is set on-chain. Once it closes, voting opens for everyone.
                     </p>
                   </div>
@@ -679,20 +679,20 @@ export default function RoundView() {
             >
               {/* Rule banner */}
               <div className={clsx(
-                'flex items-start gap-3 p-4 rounded-xl border mb-6 transition-all',
+                'flex items-start gap-3 p-4 rounded-[8px] border mb-6 transition-all',
                 votedFor
-                  ? 'border-green-400/20 bg-green-400/5'
-                  : 'border-gold/20 bg-gold/5'
+                  ? 'border-emerald-200 bg-emerald-50'
+                  : 'border-sage/20 bg-sage-light/5'
               )}>
                 {votedFor
-                  ? <CheckCircle2 size={15} className="text-green-400 mt-0.5 flex-shrink-0" />
-                  : <Users size={15} className="text-gold mt-0.5 flex-shrink-0" />
+                  ? <CheckCircle2 size={15} className="text-emerald-600 mt-0.5 flex-shrink-0" />
+                  : <Users size={15} className="text-sage-dark mt-0.5 flex-shrink-0" />
                 }
                 <div>
-                  <p className={clsx('text-sm font-medium', votedFor ? 'text-green-400' : 'text-gold')}>
+                  <p className={clsx('text-sm font-medium', votedFor ? 'text-emerald-600' : 'text-sage-dark')}>
                     {votedFor ? 'Vote cast' : 'You have 1 vote — cast it for someone else\'s idea'}
                   </p>
-                  <p className="text-parchment/45 text-xs mt-0.5">
+                  <p className="text-ink-secondary text-xs mt-0.5">
                     {votedFor
                       ? `You voted. ${totalVotes.toLocaleString()} votes total.`
                       : `${pool.length} directions competing · you cannot vote for your own`
@@ -703,7 +703,7 @@ export default function RoundView() {
 
               {/* Payment error */}
               {payError && (
-                <div className="flex items-start gap-2 p-3 rounded-lg bg-red-400/5 border border-red-400/15 mb-5 text-xs text-red-400/80">
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-200 mb-5 text-xs text-red-600">
                   <AlertCircle size={13} className="mt-0.5 flex-shrink-0" />
                   {payError}
                 </div>
@@ -733,46 +733,46 @@ export default function RoundView() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="mb-6 p-4 rounded-xl border border-gold/20 bg-gold/5"
+                    className="mb-6 p-4 rounded-[8px] border border-sage/20 bg-sage-light/5"
                   >
                     <div className="flex items-center gap-2 mb-2">
-                      <Sparkles size={12} className="text-gold" />
-                      <span className="text-xs uppercase tracking-widest text-gold/70 font-medium">Gemini reacts</span>
+                      <Sparkles size={12} className="text-sage-dark" />
+                      <span className="text-xs uppercase tracking-[0.08em] text-sage font-medium">Gemini reacts</span>
                     </div>
                     {voteReactionLoading
-                      ? <div className="flex items-center gap-2 text-parchment/40 text-sm">
-                          <div className="w-3 h-3 border border-gold/40 border-t-gold rounded-full animate-spin" />
+                      ? <div className="flex items-center gap-2 text-ink-secondary text-sm">
+                          <div className="w-3 h-3 border border-sage/40 border-t-sage rounded-full animate-spin" />
                           Reading the direction…
                         </div>
-                      : <p className="text-parchment/80 text-sm leading-relaxed font-serif italic">{voteReaction}</p>
+                      : <p className="text-ink-secondary text-sm leading-relaxed font-serif italic">{voteReaction}</p>
                     }
                   </motion.div>
                 )}
               </AnimatePresence>
 
               {/* Creator panel — reduce time only, cannot force-close */}
-              <div className="p-5 rounded-xl border border-parchment/10 bg-parchment/[0.02]">
+              <div className="p-5 rounded-[8px] border border-straw bg-parchment/[0.02]">
                 <div className="flex items-center gap-2 mb-1">
-                  <Lock size={12} className="text-parchment/30" />
-                  <p className="text-xs font-medium text-parchment/50">Creator controls</p>
+                  <Lock size={12} className="text-ink-tertiary" />
+                  <p className="text-xs font-medium text-ink-secondary">Creator controls</p>
                 </div>
-                <p className="text-xs text-parchment/30 mb-4 leading-5">
+                <p className="text-xs text-ink-tertiary mb-4 leading-5">
                   Voting cannot be force-closed once live. You can only shorten the remaining time.
                   The vote auto-resolves when the timer hits zero.
                 </p>
 
                 {winningSubmission && (
-                  <div className="mb-4 p-3 rounded-lg bg-parchment/3 border border-parchment/8">
-                    <span className="text-xs text-parchment/30">Currently leading</span>
-                    <p className="text-parchment/55 text-xs mt-1 italic line-clamp-2">
+                  <div className="mb-4 p-3 rounded-lg bg-parchment/3 border border-straw">
+                    <span className="text-xs text-ink-tertiary">Currently leading</span>
+                    <p className="text-ink-secondary text-xs mt-1 italic line-clamp-2">
                       "{winningSubmission.content}"
                     </p>
-                    <span className="text-xs text-parchment/25 mt-1 block">{winningSubmission.voteCount} votes</span>
+                    <span className="text-xs text-ink-tertiary mt-1 block">{winningSubmission.voteCount} votes</span>
                   </div>
                 )}
 
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs text-parchment/35 flex-shrink-0">Reduce time by:</span>
+                  <span className="text-xs text-ink-tertiary flex-shrink-0">Reduce time by:</span>
                   {[
                     { label: '−5 min',  ms: 5  * 60 * 1000 },
                     { label: '−30 min', ms: 30 * 60 * 1000 },
@@ -785,7 +785,7 @@ export default function RoundView() {
                       onClick={() => {
                         setVotingDeadline(prev => Math.max(Date.now() + 60_000, prev - ms))
                       }}
-                      className="h-7 px-3 rounded-full text-xs border border-parchment/15 text-parchment/45 hover:border-parchment/30 hover:text-parchment/70 transition-all"
+                      className="h-7 px-3 rounded-[8px] text-xs border border-straw text-ink-secondary hover:border-sage/30 hover:text-ink transition-all"
                     >
                       {label}
                     </button>
@@ -807,16 +807,16 @@ export default function RoundView() {
               className="py-16"
             >
               <div className="max-w-lg mx-auto text-center">
-                <div className="w-16 h-16 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center mx-auto mb-6">
-                  <Sparkles size={24} className="text-gold animate-pulse" />
+                <div className="w-16 h-16 rounded-full bg-sage-light/10 border border-sage/30 flex items-center justify-center mx-auto mb-6">
+                  <Sparkles size={24} className="text-sage-dark animate-pulse" />
                 </div>
-                <h2 className="font-serif text-2xl text-parchment mb-3">Gemini is writing the scene</h2>
-                <p className="text-parchment/40 text-sm mb-8">
+                <h2 className="font-mono font-bold text-2xl text-ink mb-3">Gemini is writing the scene</h2>
+                <p className="text-ink-secondary text-sm mb-8">
                   The community's winning direction is being turned into a professional TV drama scene.
                 </p>
-                <div className="p-4 rounded-xl border border-gold/20 bg-gold/5 mb-8 text-left">
-                  <div className="text-xs text-gold/60 uppercase tracking-widest mb-2">Winning direction</div>
-                  <p className="text-parchment/75 text-sm italic">"{winningSubmission?.content}"</p>
+                <div className="p-4 rounded-[8px] border border-sage/20 bg-sage-light/5 mb-8 text-left">
+                  <div className="text-xs text-sage uppercase tracking-[0.08em] mb-2">Winning direction</div>
+                  <p className="text-ink-secondary text-sm italic">"{winningSubmission?.content}"</p>
                 </div>
                 <div className="space-y-2.5 text-left">
                   {[75, 90, 65, 85, 70, 80, 60].map((w, i) => (
@@ -838,39 +838,39 @@ export default function RoundView() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
             >
-              <div className="mb-5 p-4 rounded-xl border border-gold/20 bg-gold/5 flex items-start gap-3">
-                <CheckCircle2 size={14} className="text-gold mt-0.5 flex-shrink-0" />
+              <div className="mb-5 p-4 rounded-[8px] border border-sage/20 bg-sage-light/5 flex items-start gap-3">
+                <CheckCircle2 size={14} className="text-sage-dark mt-0.5 flex-shrink-0" />
                 <div>
-                  <div className="text-xs text-gold/60 uppercase tracking-widest mb-1">Vote winner</div>
-                  <p className="text-parchment/75 text-sm italic">"{winningSubmission?.content}"</p>
-                  <p className="text-parchment/30 text-xs mt-1">{winningSubmission?.contributorHandle} · {winningSubmission?.voteCount} votes</p>
+                  <div className="text-xs text-sage uppercase tracking-[0.08em] mb-1">Vote winner</div>
+                  <p className="text-ink-secondary text-sm italic">"{winningSubmission?.content}"</p>
+                  <p className="text-ink-tertiary text-xs mt-1">{winningSubmission?.contributorHandle} · {winningSubmission?.voteCount} votes</p>
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-parchment/12 overflow-hidden mb-6">
-                <div className="flex items-center gap-3 px-5 py-4 bg-parchment/5 border-b border-parchment/8">
-                  <Sparkles size={14} className="text-gold" />
-                  <span className="text-sm font-medium text-parchment/80">AI Generated Scene</span>
-                  {generatedScript && <span className="text-xs bg-green-400/15 text-green-400 border border-green-400/25 rounded-full px-2 py-0.5 ml-auto">Ready</span>}
+              <div className="rounded-[8px] border border-straw overflow-hidden mb-6">
+                <div className="flex items-center gap-3 px-5 py-4 bg-parchment/5 border-b border-straw">
+                  <Sparkles size={14} className="text-sage-dark" />
+                  <span className="text-sm font-medium text-ink-secondary">AI Generated Scene</span>
+                  {generatedScript && <span className="text-xs bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-[8px] px-2 py-0.5 ml-auto">Ready</span>}
                 </div>
                 <div className="p-6">
                   {scriptError ? (
                     <div className="text-center py-8">
-                      <p className="text-parchment/40 text-sm mb-3">Add GEMINI_API_KEY to backend/.env to enable script generation.</p>
-                      <button onClick={handleGenerateScript} className="text-gold text-sm border border-gold/35 h-9 px-5 rounded-full hover:bg-gold/10 transition-all">Retry</button>
+                      <p className="text-ink-secondary text-sm mb-3">Add GEMINI_API_KEY to backend/.env to enable script generation.</p>
+                      <button onClick={handleGenerateScript} className="text-sage-dark text-sm border border-sage/35 h-9 px-5 rounded-[8px] hover:bg-sage-light/10 transition-all">Retry</button>
                     </div>
                   ) : (
-                    <pre className="font-mono text-parchment/85 text-sm leading-7 whitespace-pre-wrap">{generatedScript}</pre>
+                    <pre className="font-mono text-ink-secondary text-sm leading-7 whitespace-pre-wrap">{generatedScript}</pre>
                   )}
                 </div>
               </div>
 
               {generatedScript && (
                 <>
-                  <div className="p-4 rounded-xl border border-parchment/10 bg-parchment/3 mb-5">
+                  <div className="p-4 rounded-[8px] border border-straw bg-parchment/3 mb-5">
                     <div className="flex items-center gap-2 mb-2">
-                      <FileText size={13} className="text-parchment/40" />
-                      <span className="text-xs uppercase tracking-widest text-parchment/35">What gets published</span>
+                      <FileText size={13} className="text-ink-secondary" />
+                      <span className="text-xs uppercase tracking-[0.08em] text-ink-tertiary">What gets published</span>
                     </div>
                     <ul className="space-y-1.5">
                       {[
@@ -879,8 +879,8 @@ export default function RoundView() {
                         'Winning direction contributor → on-chain co-author credit',
                         'Vote tally → sealed alongside the paragraph',
                       ].map((item, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-parchment/45">
-                          <ChevronRight size={10} className="mt-0.5 text-gold/50 flex-shrink-0" />
+                        <li key={i} className="flex items-start gap-2 text-xs text-ink-secondary">
+                          <ChevronRight size={10} className="mt-0.5 text-sage flex-shrink-0" />
                           {item}
                         </li>
                       ))}
@@ -890,7 +890,7 @@ export default function RoundView() {
                     onClick={handlePublish}
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
-                    className="w-full flex items-center justify-center gap-2 h-11 rounded-full bg-gold text-ink-900 font-medium text-sm hover:brightness-110 transition-all"
+                    className="w-full flex items-center justify-center gap-2 h-11 rounded-[8px] bg-sage text-white font-medium text-sm hover:bg-sage-dark transition-all"
                   >
                     <Zap size={14} />
                     Publish to Solana Devnet
@@ -912,10 +912,10 @@ export default function RoundView() {
               className="py-16"
             >
               <div className="max-w-sm mx-auto text-center">
-                <div className="w-16 h-16 rounded-full bg-gold/10 border-2 border-gold/40 flex items-center justify-center mx-auto mb-6">
-                  <Zap size={24} className="text-gold" />
+                <div className="w-16 h-16 rounded-full bg-sage-light/10 border-2 border-sage/40 flex items-center justify-center mx-auto mb-6">
+                  <Zap size={24} className="text-sage-dark" />
                 </div>
-                <h2 className="font-serif text-2xl text-parchment mb-8">Publishing to devnet</h2>
+                <h2 className="font-mono font-bold text-2xl text-ink mb-8">Publishing to devnet</h2>
                 <div className="space-y-3 text-left">
                   {PUBLISH_STEPS.map((step, i) => {
                     const currentIdx = PUBLISH_STEPS.indexOf(publishStep ?? '')
@@ -924,13 +924,13 @@ export default function RoundView() {
                     return (
                       <div key={i} className={clsx(
                         'flex items-center gap-3 text-sm transition-all duration-300',
-                        isDone ? 'text-parchment/45' : isCurrent ? 'text-parchment/90' : 'text-parchment/20'
+                        isDone ? 'text-ink-secondary' : isCurrent ? 'text-ink' : 'text-ink-tertiary'
                       )}>
                         {isDone
-                          ? <CheckCircle2 size={14} className="text-green-400 flex-shrink-0" />
+                          ? <CheckCircle2 size={14} className="text-emerald-600 flex-shrink-0" />
                           : isCurrent
-                          ? <div className="w-3.5 h-3.5 border border-gold/60 border-t-gold rounded-full animate-spin flex-shrink-0" />
-                          : <div className="w-3.5 h-3.5 rounded-full border border-parchment/15 flex-shrink-0" />
+                          ? <div className="w-3.5 h-3.5 border border-sage/60 border-t-sage-dark rounded-full animate-spin flex-shrink-0" />
+                          : <div className="w-3.5 h-3.5 rounded-full border border-straw flex-shrink-0" />
                         }
                         {step}
                       </div>
@@ -952,22 +952,22 @@ export default function RoundView() {
                 transition={{ type: 'spring', stiffness: 200, damping: 15 }}
                 className="text-center py-10 mb-8"
               >
-                <div className="inline-flex w-20 h-20 rounded-full bg-gold/10 border-2 border-gold/40 items-center justify-center mb-4 animate-seal-stamp">
+                <div className="inline-flex w-20 h-20 rounded-full bg-sage-light/10 border-2 border-sage/40 items-center justify-center mb-4 animate-seal-stamp">
                   <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
                     <path d="M18 4L22 14L33 15.5L25 23L27 34L18 29L9 34L11 23L3 15.5L14 14L18 4Z"
-                      fill="rgba(201,168,76,0.2)" stroke="#c9a84c" strokeWidth="1.5" />
-                    <path d="M12 18L16 22L24 14" stroke="#c9a84c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      fill="rgba(139,105,20,0.2)" stroke="#8B6914" strokeWidth="1.5" />
+                    <path d="M12 18L16 22L24 14" stroke="#8B6914" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
-                <h2 className="font-serif text-3xl text-parchment mb-2">Scene published.</h2>
-                <p className="text-parchment/50 max-w-sm mx-auto text-sm">
+                <h2 className="font-mono font-bold text-3xl text-ink mb-2">Scene published.</h2>
+                <p className="text-ink-secondary max-w-sm mx-auto text-sm">
                   Community direction → Gemini script → Solana devnet. The winning contributor
                   is permanently credited as co-author.
                 </p>
                 {txSig && (
-                  <div className="mt-4 px-4 py-2 rounded-lg bg-parchment/5 border border-parchment/10 inline-block">
-                    <span className="text-xs text-parchment/30 mr-2">tx</span>
-                    <span className="text-xs font-mono text-parchment/60">{txSig.slice(0, 20)}…{txSig.slice(-8)}</span>
+                  <div className="mt-4 px-4 py-2 rounded-lg bg-parchment/5 border border-straw inline-block">
+                    <span className="text-xs text-ink-tertiary mr-2">tx</span>
+                    <span className="text-xs font-mono text-ink-secondary">{txSig.slice(0, 20)}…{txSig.slice(-8)}</span>
                   </div>
                 )}
               </motion.div>
@@ -977,22 +977,22 @@ export default function RoundView() {
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-6 p-5 rounded-xl border border-gold/25 bg-gold/5"
+                    className="mb-6 p-5 rounded-[8px] border border-sage/25 bg-sage-light/5"
                   >
                     <div className="flex items-center gap-2 mb-3">
-                      <Sparkles size={13} className="text-gold" />
-                      <span className="text-xs uppercase tracking-widest text-gold/70 font-medium">Gemini — Editorial Note</span>
+                      <Sparkles size={13} className="text-sage-dark" />
+                      <span className="text-xs uppercase tracking-[0.08em] text-sage font-medium">Gemini — Editorial Note</span>
                     </div>
-                    <p className="text-parchment/80 text-sm leading-relaxed font-serif italic">{sealReaction}</p>
+                    <p className="text-ink-secondary text-sm leading-relaxed font-serif italic">{sealReaction}</p>
                   </motion.div>
                 ) : (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="mb-6 p-4 rounded-xl border border-gold/10 flex items-center gap-3"
+                    className="mb-6 p-4 rounded-[8px] border border-sage/10 flex items-center gap-3"
                   >
-                    <div className="w-4 h-4 border border-gold/40 border-t-gold rounded-full animate-spin flex-shrink-0" />
-                    <span className="text-parchment/30 text-xs">Gemini writing editorial note…</span>
+                    <div className="w-4 h-4 border border-sage/40 border-t-sage-dark rounded-full animate-spin flex-shrink-0" />
+                    <span className="text-ink-tertiary text-xs">Gemini writing editorial note…</span>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -1002,13 +1002,13 @@ export default function RoundView() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="mb-6 p-6 rounded-2xl border border-parchment/12 bg-parchment/3"
+                  className="mb-6 p-6 rounded-[8px] border border-straw bg-parchment/3"
                 >
-                  <div className="text-xs uppercase tracking-widest text-parchment/30 mb-4 flex items-center gap-2">
-                    <Sparkles size={10} className="text-gold/50" />
+                  <div className="text-xs uppercase tracking-[0.08em] text-ink-tertiary mb-4 flex items-center gap-2">
+                    <Sparkles size={10} className="text-sage" />
                     Published scene · Paragraph {DEMO_PARAGRAPHS.length}
                   </div>
-                  <pre className="font-mono text-parchment/82 text-sm leading-7 whitespace-pre-wrap">{generatedScript}</pre>
+                  <pre className="font-mono text-ink-secondary text-sm leading-7 whitespace-pre-wrap">{generatedScript}</pre>
                 </motion.div>
               )}
 

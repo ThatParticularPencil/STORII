@@ -51,7 +51,7 @@ export default function TypewriterText({
     <span className={className}>
       {displayed}
       {showCursor && !done && (
-        <span className="inline-block w-0.5 h-5 bg-gold ml-0.5 animate-pulse" />
+        <span className="inline-block w-0.5 h-5 bg-sage ml-0.5 animate-pulse" />
       )}
     </span>
   )

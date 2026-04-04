@@ -14,26 +14,26 @@ export default function OnChainRecord({ record, className = '' }: OnChainRecordP
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className={`rounded-2xl border border-gold/20 bg-gold/[0.03] overflow-hidden ${className}`}
+      className={`rounded-[8px] border border-seal/30 bg-paper overflow-hidden ${className}`}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-gold/10 bg-gold/5">
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-seal/15 bg-seal-light/40">
         <div className="animate-seal-stamp">
           <SealIcon />
         </div>
         <div>
-          <div className="text-xs text-gold/60 uppercase tracking-widest font-sans">
+          <div className="text-label uppercase tracking-[0.08em] text-seal">
             Permanently Sealed on Solana
           </div>
-          <div className="text-sm text-parchment font-medium font-serif mt-0.5">
+          <div className="text-sm text-ink font-bold font-mono mt-0.5">
             {record.pieceTitle}
           </div>
         </div>
         <div className="ml-auto">
-          <div className="text-xs font-mono text-parchment/40 text-right">
+          <div className="text-xs font-mono text-ink-secondary text-right">
             Paragraph {record.paragraphIndex}
           </div>
-          <div className="text-xs text-parchment/30 text-right">
+          <div className="text-xs text-ink-tertiary text-right">
             of {record.totalParagraphs} sealed
           </div>
         </div>
@@ -81,15 +81,15 @@ export default function OnChainRecord({ record, className = '' }: OnChainRecordP
       </div>
 
       {/* Footer */}
-      <div className="px-5 py-3 border-t border-gold/10 flex items-center justify-between">
-        <span className="text-xs text-parchment/30 font-sans">
+      <div className="px-5 py-3 border-t border-straw flex items-center justify-between">
+        <span className="text-xs text-ink-tertiary font-mono">
           This record cannot be edited, deleted, or disputed.
         </span>
         <a
           href={explorerAccountUrl(record.programId)}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-xs text-gold/60 hover:text-gold transition-colors"
+          className="flex items-center gap-1.5 text-xs text-sage-dark hover:text-sage transition-colors"
         >
           <ExternalLink size={11} />
           View on Explorer
@@ -114,24 +114,24 @@ function RecordRow({
 }) {
   return (
     <div className="flex gap-3 items-start">
-      <span className="text-gold/50 mt-0.5 flex-shrink-0">{icon}</span>
+      <span className="text-seal mt-0.5 flex-shrink-0">{icon}</span>
       <div className="flex-1 min-w-0">
-        <div className="text-xs text-parchment/40 mb-0.5">{label}</div>
+        <div className="text-xs text-ink-tertiary mb-0.5">{label}</div>
         {link ? (
           <a
             href={link}
             target="_blank"
             rel="noopener noreferrer"
-            className={`text-sm text-parchment/80 hover:text-parchment break-all transition-colors flex items-center gap-1 ${
+            className={`text-sm text-ink-secondary hover:text-ink break-all transition-colors flex items-center gap-1 ${
               mono ? 'font-mono text-xs' : ''
             }`}
           >
             {value}
-            <ExternalLink size={10} className="flex-shrink-0 text-parchment/40" />
+            <ExternalLink size={10} className="flex-shrink-0 text-ink-tertiary" />
           </a>
         ) : (
           <div
-            className={`text-sm text-parchment/80 break-all ${
+            className={`text-sm text-ink-secondary break-all ${
               mono ? 'font-mono text-xs' : ''
             }`}
           >
@@ -145,16 +145,16 @@ function RecordRow({
 
 function SealIcon() {
   return (
-    <div className="w-10 h-10 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center">
+    <div className="w-10 h-10 rounded-full bg-seal-light border border-seal/30 flex items-center justify-center">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <path
           d="M10 2L12.5 7L18 8L14 12L15 18L10 15.5L5 18L6 12L2 8L7.5 7L10 2Z"
-          fill="#c9a84c"
+          fill="#8B6914"
           opacity="0.2"
-          stroke="#c9a84c"
+          stroke="#8B6914"
           strokeWidth="1.2"
         />
-        <path d="M7 10L9 12L13 8" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M7 10L9 12L13 8" stroke="#8B6914" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     </div>
   )

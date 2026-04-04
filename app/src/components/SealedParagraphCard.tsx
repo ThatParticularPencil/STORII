@@ -1,10 +1,15 @@
 import { motion } from 'framer-motion'
 import { Lock, ExternalLink } from 'lucide-react'
+import { clsx } from 'clsx'
 import { shortenAddress, formatTimestamp, explorerAccountUrl } from '@/utils/solana'
 import type { SealedParagraph } from '@/types'
 
 interface SealedParagraphCardProps {
-  paragraph: SealedParagraph & { content?: string; authorHandle?: string }
+  paragraph: SealedParagraph & {
+    content?: string | null
+    authorHandle?: string
+    winningDirection?: string
+  }
   index: number
   showChainDetails?: boolean
 }
@@ -14,95 +19,119 @@ export default function SealedParagraphCard({
   index,
   showChainDetails = false,
 }: SealedParagraphCardProps) {
+  const content = paragraph.content || '[ Loading from Arweave... ]'
+  const isOpening = paragraph.isOpening
+
+  // Drop cap: split first letter from rest of opening paragraph
+  const firstChar = content.charAt(0)
+  const restOfContent = content.slice(1)
+
   return (
-    <motion.div
+    <motion.article
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.08 }}
-      className="group"
+      className="group grid grid-cols-[auto_1fr] gap-x-6 gap-y-3"
     >
-      <div className="flex gap-6 items-start">
-        {/* Part number */}
-        <div className="flex-shrink-0 mt-1">
-          <span className="font-mono text-xs text-parchment/20 tabular-nums">
-            {String(paragraph.index + 1).padStart(2, '0')}
-          </span>
-        </div>
-
-        <div className="flex-1 min-w-0">
-          {/* Paragraph text */}
-          <p className="font-serif text-parchment/85 leading-[1.85] text-[17px] mb-4">
-            {paragraph.content || '[ Loading from Arweave… ]'}
-          </p>
-
-          {/* Attribution */}
-          <div className="flex items-center gap-4 text-xs text-parchment/30 flex-wrap">
-            <span className="text-parchment/45">
-              {paragraph.authorHandle || shortenAddress(paragraph.author.toString())}
-            </span>
-
-            {!paragraph.isOpening && (
-              <>
-                <span>·</span>
-                <span>{paragraph.voteCount.toLocaleString()} votes</span>
-              </>
-            )}
-
-            <span>·</span>
-            <span className="flex items-center gap-1">
-              <Lock size={9} />
-              sealed on-chain
-            </span>
-
-            {showChainDetails && (
-              <a
-                href={explorerAccountUrl(paragraph.author.toString())}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-gold/40 hover:text-gold/70 transition-colors ml-auto"
-              >
-                <ExternalLink size={10} />
-                View proof
-              </a>
-            )}
-          </div>
-
-          {/* Expanded details */}
-          {showChainDetails && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mt-4 space-y-3"
-            >
-              {/* Winning direction — the original community prompt */}
-              {paragraph.winningDirection && (
-                <div className="p-4 rounded-xl bg-gold/[0.06] border border-gold/20">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] uppercase tracking-widest text-gold/60 font-medium">Winning direction</span>
-                    <span className="text-[10px] text-parchment/25">· the prompt before Gemini expanded it</span>
-                  </div>
-                  <p className="font-serif italic text-parchment/70 text-sm leading-relaxed">
-                    "{paragraph.winningDirection}"
-                  </p>
-                  <p className="text-xs text-parchment/30 mt-2">
-                    {paragraph.authorHandle} · {paragraph.voteCount.toLocaleString()} votes
-                  </p>
-                </div>
-              )}
-
-              {/* Chain record */}
-              <div className="p-4 rounded-xl bg-parchment/[0.02] border border-parchment/8 font-mono text-xs text-parchment/50 space-y-1.5">
-                <div><span className="text-parchment/30">author </span>{shortenAddress(paragraph.author.toString(), 6)}</div>
-                <div><span className="text-parchment/30">votes  </span>{paragraph.voteCount}</div>
-                <div><span className="text-parchment/30">sealed </span>{formatTimestamp(paragraph.sealedAt)}</div>
-                <div><span className="text-parchment/30">hash   </span>
-                  {Array.from(paragraph.contentHash).slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('')}…
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </div>
+      {/* Folio number — old-book style */}
+      <div className="pt-2 select-none">
+        <span className="font-mono text-[10px] text-ink-tertiary tabular-nums tracking-[0.15em] uppercase">
+          {String(paragraph.index + 1).padStart(2, '0')}
+        </span>
       </div>
-    </motion.div>
+
+      {/* Sealed blockquote with before: accent bar (21st.dev pattern) */}
+      <blockquote
+        className={clsx(
+          'relative pl-6',
+          'before:absolute before:inset-y-1 before:left-0 before:w-[3px] before:rounded-full',
+          'before:bg-seal before:transition-all',
+          'group-hover:before:bg-seal group-hover:before:w-[4px]',
+        )}
+      >
+        {isOpening ? (
+          <p className="font-serif text-ink leading-[1.75] text-[17px] mb-0">
+            <span
+              className="float-left font-mono font-bold text-[56px] leading-[0.85] mr-2 mt-1.5 text-seal"
+              aria-hidden
+            >
+              {firstChar}
+            </span>
+            {restOfContent}
+          </p>
+        ) : (
+          <p className="font-serif text-ink leading-[1.75] text-[17px] mb-0">
+            {content}
+          </p>
+        )}
+      </blockquote>
+
+      {/* Attribution — aligned under blockquote */}
+      <div />
+      <footer className="flex items-center gap-3 text-xs text-ink-tertiary flex-wrap font-mono pl-6">
+        <cite className="not-italic text-ink-secondary">
+          {paragraph.authorHandle || shortenAddress(paragraph.author.toString())}
+        </cite>
+        <span aria-hidden className="bg-ink-tertiary/30 size-1 rounded-full" />
+        {!isOpening && (
+          <>
+            <span className="tabular-nums">{paragraph.voteCount.toLocaleString()} votes</span>
+            <span aria-hidden className="bg-ink-tertiary/30 size-1 rounded-full" />
+          </>
+        )}
+        <span className="flex items-center gap-1 text-seal">
+          <Lock size={9} />
+          sealed on-chain
+        </span>
+
+        {showChainDetails && (
+          <a
+            href={explorerAccountUrl(paragraph.author.toString())}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-sage-dark hover:text-sage transition-colors ml-auto"
+          >
+            <ExternalLink size={10} />
+            View proof
+          </a>
+        )}
+      </footer>
+
+      {/* Expanded details */}
+      {showChainDetails && (
+        <>
+          <div />
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="pl-6 space-y-3"
+          >
+            {paragraph.winningDirection && (
+              <div className="p-4 rounded-[8px] bg-seal-light/50 border border-seal/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-label uppercase tracking-[0.08em] text-seal font-bold">Winning direction</span>
+                  <span className="text-[10px] text-ink-tertiary">· the prompt before Gemini expanded it</span>
+                </div>
+                <p className="font-serif italic text-ink-secondary text-sm leading-relaxed">
+                  "{paragraph.winningDirection}"
+                </p>
+                <p className="text-xs text-ink-tertiary mt-2 font-mono">
+                  {paragraph.authorHandle} · {paragraph.voteCount.toLocaleString()} votes
+                </p>
+              </div>
+            )}
+
+            <div className="p-4 rounded-[8px] bg-parchment/50 border border-straw font-mono text-xs text-ink-secondary space-y-1.5">
+              <div><span className="text-ink-tertiary">author </span>{shortenAddress(paragraph.author.toString(), 6)}</div>
+              <div><span className="text-ink-tertiary">votes  </span><span className="tabular-nums">{paragraph.voteCount}</span></div>
+              <div><span className="text-ink-tertiary">sealed </span>{formatTimestamp(paragraph.sealedAt)}</div>
+              <div><span className="text-ink-tertiary">hash   </span>
+                {Array.from(paragraph.contentHash).slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('')}…
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </motion.article>
   )
 }

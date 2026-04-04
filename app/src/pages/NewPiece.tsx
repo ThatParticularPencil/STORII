@@ -6,6 +6,7 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { ArrowRight, CheckCircle2, Lock, AlertCircle, Users, Sparkles, BookOpen } from 'lucide-react'
 import { clsx } from 'clsx'
 import { sendSolPayment } from '@/utils/solana'
+import DotPattern from '@/components/DotPattern'
 
 export const MAX_PARAGRAPHS = 8
 
@@ -34,7 +35,6 @@ export default function NewPiece() {
       setPayError(null)
 
       try {
-        // Triggers Phantom popup — 0.1 SOL to create the piece
         await sendSolPayment(connection, wallet, 0.1)
       } catch (err: any) {
         setPayError(err?.message?.includes('rejected') || err?.message?.includes('cancel')
@@ -55,16 +55,15 @@ export default function NewPiece() {
     if (stepIndex > 0 && step !== 'done') setStep(STEP_ORDER[stepIndex - 1])
   }
 
-  // Wall: must be a connected creator
   if (!publicKey) {
     return (
       <main className="min-h-screen pt-28 flex items-center justify-center px-6">
         <div className="text-center max-w-sm">
-          <div className="w-14 h-14 rounded-full bg-gold/10 border border-gold/25 flex items-center justify-center mx-auto mb-5">
-            <Lock size={22} className="text-gold" />
+          <div className="w-14 h-14 rounded-full bg-sage-light border border-sage/30 flex items-center justify-center mx-auto mb-5">
+            <Lock size={22} className="text-sage" />
           </div>
-          <h1 className="font-serif text-3xl text-parchment mb-3">Creators only</h1>
-          <p className="text-parchment/50 mb-8 text-sm leading-relaxed">
+          <h1 className="font-mono font-bold text-3xl text-ink mb-3">Creators only</h1>
+          <p className="text-ink-secondary mb-8 text-sm leading-relaxed font-serif">
             Connect your Phantom or Solflare wallet to start a new piece.
             Only wallet-connected creators can open a piece on Storii.
           </p>
@@ -75,8 +74,9 @@ export default function NewPiece() {
   }
 
   return (
-    <main className="min-h-screen pt-28 pb-24 px-6">
-      <div className="max-w-2xl mx-auto">
+    <main className="min-h-screen pt-28 pb-24 px-6 relative">
+      <DotPattern />
+      <div className="max-w-2xl mx-auto relative z-10">
 
         {/* Step indicator */}
         <div className="flex items-center gap-2 mb-10">
@@ -86,18 +86,18 @@ export default function NewPiece() {
             return (
               <div key={label} className="flex items-center gap-2">
                 <div className={clsx(
-                  'w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all',
-                  done  ? 'bg-gold/20 border border-gold/40 text-gold' :
-                  active ? 'bg-gold text-ink-900' :
-                           'bg-parchment/5 border border-parchment/15 text-parchment/30'
+                  'w-7 h-7 rounded-full flex items-center justify-center text-xs font-mono font-bold transition-all',
+                  done  ? 'bg-sage-light border border-sage/40 text-sage-dark' :
+                  active ? 'bg-sage text-white' :
+                           'bg-parchment border border-straw text-ink-tertiary'
                 )}>
                   {done ? <CheckCircle2 size={14} /> : i + 1}
                 </div>
-                <span className={clsx('text-xs', active || done ? 'text-parchment' : 'text-parchment/35')}>
+                <span className={clsx('text-xs font-mono', active || done ? 'text-ink' : 'text-ink-tertiary')}>
                   {label}
                 </span>
                 {i < 2 && (
-                  <div className={clsx('w-8 h-px', done ? 'bg-gold/30' : 'bg-parchment/10')} />
+                  <div className={clsx('w-8 h-px', done ? 'bg-sage/40' : 'bg-straw')} />
                 )}
               </div>
             )
@@ -106,7 +106,7 @@ export default function NewPiece() {
 
         <AnimatePresence mode="wait">
 
-          {/* ── Step 1: Title ── */}
+          {/* Step 1: Title */}
           {step === 'title' && (
             <StepWrapper key="title">
               <StepHeading
@@ -118,18 +118,17 @@ export default function NewPiece() {
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
-                placeholder="It was the night before the product launch…"
+                placeholder="It was the night before the product launch..."
                 maxLength={128}
-                className="w-full bg-ink-50/50 border border-parchment/15 rounded-xl px-5 py-4 font-serif text-xl text-parchment placeholder:text-parchment/20 focus:outline-none focus:border-gold/40 mb-2 transition-colors"
+                className="w-full bg-paper border border-straw rounded-[8px] px-5 py-4 font-serif text-xl text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-sage mb-2 transition-colors"
                 autoFocus
               />
-              <div className="text-xs text-parchment/30 text-right mb-6">{title.length} / 128</div>
+              <div className="text-xs text-ink-tertiary text-right mb-6 font-mono">{title.length} / 128</div>
 
-              {/* How it works callout */}
-              <div className="p-4 rounded-xl border border-gold/15 bg-gold/5 mb-8 space-y-2.5">
+              <div className="p-4 rounded-[8px] border border-sage/20 bg-sage-light/20 mb-8 space-y-2.5">
                 <div className="flex items-center gap-2 mb-1">
-                  <BookOpen size={13} className="text-gold" />
-                  <span className="text-xs font-medium text-gold uppercase tracking-widest">How your piece works</span>
+                  <BookOpen size={13} className="text-sage" />
+                  <span className="text-label uppercase tracking-[0.08em] text-sage font-bold">How your piece works</span>
                 </div>
                 {[
                   { icon: Users,    text: 'Community submits 50-word directions for each part' },
@@ -138,8 +137,8 @@ export default function NewPiece() {
                   { icon: Lock,     text: 'You review and publish to Solana devnet permanently' },
                   { icon: BookOpen, text: `Max ${MAX_PARAGRAPHS} parts — intro included, all voted on` },
                 ].map(({ icon: Icon, text }, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs text-parchment/55">
-                    <Icon size={11} className="text-gold/50 mt-0.5 flex-shrink-0" />
+                  <div key={i} className="flex items-start gap-2 text-xs text-ink-secondary">
+                    <Icon size={11} className="text-sage/60 mt-0.5 flex-shrink-0" />
                     {text}
                   </div>
                 ))}
@@ -151,7 +150,7 @@ export default function NewPiece() {
             </StepWrapper>
           )}
 
-          {/* ── Step 2: Settings ── */}
+          {/* Step 2: Settings */}
           {step === 'settings' && (
             <StepWrapper key="settings">
               <StepHeading
@@ -188,12 +187,11 @@ export default function NewPiece() {
                   hint="Limits the vote pool — keeps it readable"
                 />
 
-                {/* Max paragraphs info */}
-                <div className="flex items-start gap-3 p-4 rounded-xl border border-parchment/10 bg-parchment/3">
-                  <BookOpen size={14} className="text-parchment/40 mt-0.5 flex-shrink-0" />
+                <div className="flex items-start gap-3 p-4 rounded-[8px] border border-straw bg-parchment/30">
+                  <BookOpen size={14} className="text-ink-tertiary mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-medium text-parchment/70 mb-0.5">Max {MAX_PARAGRAPHS} parts per piece</p>
-                    <p className="text-xs text-parchment/40 leading-5">
+                    <p className="text-sm font-mono font-bold text-ink mb-0.5">Max {MAX_PARAGRAPHS} parts per piece</p>
+                    <p className="text-xs text-ink-tertiary leading-5 font-serif">
                       Round 1 decides the intro. Rounds 2–{MAX_PARAGRAPHS} continue the piece.
                       After {MAX_PARAGRAPHS} sealed paragraphs the piece is marked complete on-chain.
                     </p>
@@ -201,7 +199,7 @@ export default function NewPiece() {
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <button onClick={goBack} className="text-sm text-parchment/35 hover:text-parchment/60 transition-colors">
+                <button onClick={goBack} className="text-sm text-ink-tertiary hover:text-ink-secondary transition-colors font-mono">
                   ← Back
                 </button>
                 <StepButton onClick={goNext} className="flex-1">Continue</StepButton>
@@ -209,7 +207,7 @@ export default function NewPiece() {
             </StepWrapper>
           )}
 
-          {/* ── Step 3: Confirm ── */}
+          {/* Step 3: Confirm */}
           {step === 'confirm' && (
             <StepWrapper key="confirm">
               <StepHeading
@@ -218,7 +216,7 @@ export default function NewPiece() {
                 description="This sends one transaction to register the piece on Solana. Round 1 opens immediately after — the community votes on the intro."
               />
 
-              <div className="rounded-2xl bg-parchment/3 border border-parchment/10 p-6 mb-5 space-y-4">
+              <div className="rounded-[8px] bg-paper border border-straw p-6 mb-5 space-y-4">
                 <ConfirmRow label="Title" value={title} />
                 <ConfirmRow label="Submission window" value={`${submissionHours}h per round`} />
                 <ConfirmRow label="Voting window" value={`${votingHours}h per round`} />
@@ -228,32 +226,31 @@ export default function NewPiece() {
                 <ConfirmRow label="Network" value="Solana Devnet" />
               </div>
 
-              {/* No opening paragraph note */}
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-gold/5 border border-gold/15 mb-5">
-                <Sparkles size={13} className="text-gold/70 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-parchment/55 leading-5">
+              <div className="flex items-start gap-2 p-3 rounded-[8px] bg-sage-light/30 border border-sage/20 mb-5">
+                <Sparkles size={13} className="text-sage mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-ink-secondary leading-5 font-serif">
                   You do not write the opening paragraph. Round 1 works exactly like every other round —
                   your community submits directions, votes, and Gemini writes the opening scene.
                   You review and publish it.
                 </p>
               </div>
 
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-parchment/5 border border-parchment/10 mb-4">
-                <AlertCircle size={13} className="text-parchment/40 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-parchment/40">
+              <div className="flex items-start gap-2 p-3 rounded-[8px] bg-parchment/50 border border-straw mb-4">
+                <AlertCircle size={13} className="text-ink-tertiary mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-ink-tertiary font-mono">
                   Estimated gas: ~0.001 SOL to create the piece account on devnet.
                 </p>
               </div>
 
               {payError && (
-                <div className="flex items-start gap-2 p-3 rounded-lg bg-red-400/5 border border-red-400/15 mb-4 text-xs text-red-400/80">
+                <div className="flex items-start gap-2 p-3 rounded-[8px] bg-red-50 border border-red-200 mb-4 text-xs text-red-600">
                   <AlertCircle size={13} className="mt-0.5 flex-shrink-0" />
                   {payError}
                 </div>
               )}
 
               <div className="flex items-center gap-4">
-                <button onClick={goBack} className="text-sm text-parchment/35 hover:text-parchment/60 transition-colors">
+                <button onClick={goBack} className="text-sm text-ink-tertiary hover:text-ink-secondary transition-colors font-mono">
                   ← Back
                 </button>
                 <div className="flex-1">
@@ -262,12 +259,12 @@ export default function NewPiece() {
                     disabled={submitting}
                     whileHover={{ scale: submitting ? 1 : 1.01 }}
                     whileTap={{ scale: submitting ? 1 : 0.98 }}
-                    className="w-full flex items-center justify-center gap-2 h-11 rounded-full font-medium text-sm bg-gold text-ink-900 hover:brightness-110 transition-all disabled:opacity-40"
+                    className="w-full flex items-center justify-center gap-2 h-11 rounded-[8px] font-mono font-bold text-sm bg-sage text-white hover:bg-sage-dark transition-all disabled:opacity-40"
                   >
                     {submitting ? (
                       <>
-                        <div className="w-3.5 h-3.5 border-2 border-ink-900/30 border-t-ink-900 rounded-full animate-spin" />
-                        Creating on Solana…
+                        <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Creating on Solana...
                       </>
                     ) : (
                       <>
@@ -277,14 +274,14 @@ export default function NewPiece() {
                     )}
                   </motion.button>
                   {!submitting && (
-                    <p className="text-center text-xs text-parchment/25 mt-2">0.1 SOL + gas fee</p>
+                    <p className="text-center text-xs text-ink-tertiary mt-2 font-mono">0.1 SOL + gas fee</p>
                   )}
                 </div>
               </div>
             </StepWrapper>
           )}
 
-          {/* ── Done ── */}
+          {/* Done */}
           {step === 'done' && (
             <StepWrapper key="done">
               <motion.div
@@ -293,42 +290,41 @@ export default function NewPiece() {
                 transition={{ type: 'spring', stiffness: 180, damping: 14 }}
                 className="text-center py-8"
               >
-                <div className="inline-flex w-20 h-20 rounded-full bg-gold/10 border-2 border-gold/40 items-center justify-center mb-6 animate-seal-stamp">
-                  <CheckCircle2 size={32} className="text-gold" />
+                <div className="inline-flex w-20 h-20 rounded-full bg-seal-light border-2 border-seal/40 items-center justify-center mb-6 animate-seal-stamp">
+                  <CheckCircle2 size={32} className="text-seal" />
                 </div>
-                <h2 className="font-serif text-3xl text-parchment mb-3">Piece created.</h2>
-                <p className="text-parchment/50 mb-2 max-w-sm mx-auto text-sm leading-relaxed">
+                <h2 className="font-mono font-bold text-3xl text-ink mb-3">Piece created.</h2>
+                <p className="text-ink-secondary mb-2 max-w-sm mx-auto text-sm leading-relaxed font-serif">
                   "{title}" is registered on Solana. Round 1 is open — your community will now submit
                   directions and vote on the opening paragraph.
                 </p>
-                <div className="text-xs font-mono text-gold/40 mb-6">
+                <div className="text-xs font-mono text-seal mb-6">
                   Piece account → Solana Devnet · Round 1 open
                 </div>
 
-                {/* Part counter preview */}
                 <div className="flex items-center justify-center gap-1.5 mb-8">
                   {Array.from({ length: MAX_PARAGRAPHS }).map((_, i) => (
                     <div
                       key={i}
                       className={clsx(
                         'w-6 h-1.5 rounded-full transition-all',
-                        i === 0 ? 'bg-gold/60 animate-pulse' : 'bg-parchment/10'
+                        i === 0 ? 'bg-sage animate-pulse' : 'bg-parchment'
                       )}
                     />
                   ))}
-                  <span className="text-xs text-parchment/30 ml-2">0 / {MAX_PARAGRAPHS} parts</span>
+                  <span className="text-xs text-ink-tertiary ml-2 font-mono">0 / {MAX_PARAGRAPHS} parts</span>
                 </div>
 
                 <div className="flex items-center gap-3 justify-center">
                   <button
                     onClick={() => navigate('/dashboard')}
-                    className="h-10 px-5 rounded-full text-sm text-parchment/40 hover:text-parchment/70 border border-parchment/12 hover:border-parchment/25 transition-all"
+                    className="h-10 px-5 rounded-[8px] text-sm text-ink-tertiary hover:text-ink border border-straw hover:border-sage transition-all font-mono"
                   >
                     Dashboard
                   </button>
                   <button
                     onClick={() => navigate('/piece/demo-piece-new')}
-                    className="flex items-center gap-2 h-10 px-5 rounded-full text-sm bg-gold text-ink-900 hover:brightness-110 font-medium transition-all"
+                    className="flex items-center gap-2 h-10 px-5 rounded-[8px] text-sm bg-sage text-white hover:bg-sage-dark font-mono font-bold transition-all"
                   >
                     Open Round 1
                     <ArrowRight size={13} />
@@ -343,8 +339,6 @@ export default function NewPiece() {
     </main>
   )
 }
-
-// ── Sub-components ─────────────────────────────────────────────────────────────
 
 function StepWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -362,9 +356,9 @@ function StepWrapper({ children }: { children: React.ReactNode }) {
 function StepHeading({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
   return (
     <div className="mb-8">
-      <div className="text-xs uppercase tracking-widest text-gold/50 mb-2">{eyebrow}</div>
-      <h2 className="font-serif text-3xl text-parchment mb-2">{title}</h2>
-      <p className="text-parchment/50 leading-relaxed">{description}</p>
+      <div className="text-label uppercase tracking-[0.08em] text-sage mb-2">{eyebrow}</div>
+      <h2 className="font-mono font-bold text-3xl text-ink mb-2">{title}</h2>
+      <p className="text-ink-secondary leading-relaxed font-serif">{description}</p>
     </div>
   )
 }
@@ -379,10 +373,10 @@ function StepButton({ onClick, disabled, children, className = '' }: {
       whileHover={{ scale: disabled ? 1 : 1.01 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
       className={clsx(
-        'flex items-center justify-center gap-2 h-11 px-6 rounded-full font-medium text-sm transition-all',
+        'flex items-center justify-center gap-2 h-11 px-6 rounded-[8px] font-mono font-bold text-sm transition-all',
         disabled
-          ? 'bg-parchment/6 text-parchment/25 cursor-not-allowed'
-          : 'bg-gold text-ink-900 hover:brightness-110',
+          ? 'bg-parchment text-ink-tertiary cursor-not-allowed'
+          : 'bg-sage text-white hover:bg-sage-dark',
         className
       )}
     >
@@ -397,19 +391,19 @@ function SettingInput({ label, value, onChange, unit, min, max, hint }: {
   unit: string; min: number; max: number; hint: string
 }) {
   return (
-    <div className="rounded-xl border border-parchment/10 bg-parchment/3 p-4">
+    <div className="rounded-[8px] border border-straw bg-paper p-4">
       <div className="flex items-center justify-between mb-1.5">
-        <label className="text-sm font-medium text-parchment/80">{label}</label>
+        <label className="text-sm font-mono font-bold text-ink">{label}</label>
         <div className="flex items-center gap-2">
           <button onClick={() => onChange(Math.max(min, value - 1))}
-            className="w-6 h-6 rounded border border-parchment/20 text-parchment/50 hover:text-parchment flex items-center justify-center text-sm">−</button>
-          <span className="font-mono text-gold min-w-[3ch] text-center">{value}</span>
+            className="w-6 h-6 rounded border border-straw text-ink-secondary hover:text-ink hover:border-sage flex items-center justify-center text-sm transition-colors">−</button>
+          <span className="font-mono font-bold text-sage min-w-[3ch] text-center">{value}</span>
           <button onClick={() => onChange(Math.min(max, value + 1))}
-            className="w-6 h-6 rounded border border-parchment/20 text-parchment/50 hover:text-parchment flex items-center justify-center text-sm">+</button>
-          <span className="text-xs text-parchment/40">{unit}</span>
+            className="w-6 h-6 rounded border border-straw text-ink-secondary hover:text-ink hover:border-sage flex items-center justify-center text-sm transition-colors">+</button>
+          <span className="text-xs text-ink-tertiary font-mono">{unit}</span>
         </div>
       </div>
-      <p className="text-xs text-parchment/35">{hint}</p>
+      <p className="text-xs text-ink-tertiary font-serif">{hint}</p>
     </div>
   )
 }
@@ -417,8 +411,8 @@ function SettingInput({ label, value, onChange, unit, min, max, hint }: {
 function ConfirmRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-4">
-      <span className="text-xs text-parchment/40 flex-shrink-0 mt-0.5">{label}</span>
-      <span className="text-sm text-parchment/80 text-right">{value}</span>
+      <span className="text-xs text-ink-tertiary flex-shrink-0 mt-0.5 font-mono">{label}</span>
+      <span className="text-sm text-ink text-right font-mono">{value}</span>
     </div>
   )
 }
