@@ -8,7 +8,10 @@ async function callGemini(prompt: string): Promise<string> {
   const res = await fetch(`${API_URL}?key=${apiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+    signal: AbortSignal.timeout(45_000),
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+    }),
   })
 
   if (!res.ok) {
@@ -16,82 +19,75 @@ async function callGemini(prompt: string): Promise<string> {
     throw new Error(`Gemini ${res.status}: ${text.slice(0, 200)}`)
   }
 
-  const data = await res.json()
+  const data: any = await res.json()
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
   if (!text) throw new Error('Gemini returned empty response')
   return text.trim()
 }
 
-/**
- * Called when a user casts a vote on a direction.
- * Returns a 1–2 sentence literary reaction.
- */
 export async function reactToVote(directionText: string, voteCount: number): Promise<string> {
-  const prompt = `You are a literary editor watching a live collaborative story unfold.
-
-A community member just voted for this story direction (now at ${voteCount} votes). React in 1–2 sharp sentences — speak like a critic watching something exciting happen. Present tense. No fluff.
-
-Direction the community voted for:
-"${directionText.slice(0, 300)}"`
+  const prompt = [
+    'You are a literary editor watching a live collaborative story unfold.',
+    '',
+    `A community member just voted for this story direction, bringing it to ${voteCount} votes. React in 1-2 sharp sentences, in present tense, like a critic watching momentum build in real time. No headers, no bullets, no filler.`,
+    '',
+    'Direction:',
+    `"${directionText.slice(0, 300)}"`,
+    '',
+    'Return only the reaction.',
+  ].join('\n')
 
   return callGemini(prompt)
 }
 
-/**
- * The core function. Takes the winning 50-word direction + the sealed story so far,
- * generates a full professional TV/film script scene as the next paragraph.
- */
 export async function generateScriptFromDirection(
   winningDirection: string,
   storyContext: string,
   pieceTitle: string
 ): Promise<string> {
-  const prompt = `You are a professional TV drama screenwriter (think HBO, Succession, The Bear).
-
-You are writing the next scene for a collaborative story. The community has voted on a direction — your job is to execute it as a polished, publication-ready script scene.
-
-STORY TITLE: "${pieceTitle}"
-
-STORY SO FAR:
-${storyContext.slice(0, 1200)}
-
----
-
-COMMUNITY'S CHOSEN DIRECTION (what they want to happen next):
-"${winningDirection}"
-
----
-
-Write the next scene. Requirements:
-- Professional TV drama script format
-- 120–180 words
-- Use action lines (INT./EXT. slug if needed, then present-tense action)
-- Include at least one line of sharp, character-revealing dialogue
-- Match the tone and voice of the story so far exactly
-- Do NOT add a title, scene number, or any preamble — just the scene
-- End at a natural beat — a turn, a revelation, or a held moment
-
-Write only the scene. Nothing else.`
+  const prompt = [
+    'You are a premium TV drama writer polishing the next sealed scene of an interactive story.',
+    '',
+    `Story title: "${pieceTitle}"`,
+    '',
+    'Story so far:',
+    storyContext.slice(0, 1600),
+    '',
+    'Selected community direction:',
+    `"${winningDirection}"`,
+    '',
+    'Write the next scene as the actual story text that should be appended to the piece.',
+    '',
+    'Requirements:',
+    '- 120-180 words',
+    '- Rich, cinematic prose',
+    '- Present tense',
+    '- Include precise physical detail and at least one revealing line of dialogue',
+    '- Preserve continuity with the existing story',
+    '- Fully execute the chosen direction instead of summarizing it',
+    '- No markdown, no title, no labels, no notes',
+    '',
+    'Return only the final scene text.',
+  ].join('\n')
 
   return callGemini(prompt)
 }
 
-/**
- * After the script is sealed, generate a brief literary analysis.
- */
 export async function reactToSeal(sealedScript: string, pieceTitle: string): Promise<string> {
-  const prompt = `You're a literary critic writing a one-paragraph reaction to a scene that was just permanently sealed on the Solana blockchain by community vote.
-
-Story: "${pieceTitle}"
-
-Sealed scene:
-"${sealedScript.slice(0, 600)}"
-
-Write exactly two sentences:
-1. What makes this scene work — the craft choice that lands
-2. A teaser about what the next scene might demand
-
-Under 50 words. No headers.`
+  const prompt = [
+    'You are a literary critic responding to a newly sealed scene from a collaborative story.',
+    '',
+    `Story: "${pieceTitle}"`,
+    '',
+    'Sealed scene:',
+    `"${sealedScript.slice(0, 700)}"`,
+    '',
+    'Write exactly two sentences:',
+    '1. Identify the craft move that makes the scene land',
+    '2. Tease the pressure now building for the next scene',
+    '',
+    'Under 50 words total. Return only the two sentences.',
+  ].join('\n')
 
   return callGemini(prompt)
 }

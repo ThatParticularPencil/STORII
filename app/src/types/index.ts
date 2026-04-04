@@ -3,7 +3,7 @@ import { PublicKey } from '@solana/web3.js'
 // ── Enums (mirror Anchor program) ─────────────────────────────────────────────
 
 export type PieceStatus = 'Active' | 'Complete'
-export type RoundStatus = 'Submissions' | 'Voting' | 'Closed'
+export type RoundStatus = 'Submissions' | 'Voting' | 'Runoff' | 'Closed'
 export type SubscriberTier = 'InnerCircle' | 'Community' | 'Reader'
 
 // ── On-chain account shapes ───────────────────────────────────────────────────

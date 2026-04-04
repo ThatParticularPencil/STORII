@@ -197,24 +197,22 @@ function PieceManageCard({
 
 function SubscribersPanel() {
   const [walletInput, setWalletInput] = useState('')
-  const [tier, setTier] = useState<'InnerCircle' | 'Community' | 'Reader'>('Community')
+  const [tier, setTier] = useState<'Community' | 'Reader'>('Community')
 
   const DEMO_SUBSCRIBERS = [
-    { wallet: '3kMn...7pQs', handle: '@devsmith_codes', tier: 'InnerCircle' as const },
-    { wallet: '7rTv...2nBw', handle: '@maya_writes', tier: 'InnerCircle' as const },
+    { wallet: '3kMn...7pQs', handle: '@devsmith_codes', tier: 'Community' as const },
+    { wallet: '7rTv...2nBw', handle: '@maya_writes', tier: 'Community' as const },
     { wallet: '2wXq...5mRo', handle: '@storyhunter_em', tier: 'Community' as const },
     { wallet: '5pNm...8kLj', handle: '@techwriter_ravi', tier: 'Community' as const },
-    { wallet: '9cYs...3vPt', handle: '@inkandcode', tier: 'InnerCircle' as const },
+    { wallet: '9cYs...3vPt', handle: '@inkandcode', tier: 'Community' as const },
   ]
 
   const TIER_LABELS = {
-    InnerCircle: 'Inner Circle',
     Community: 'Community',
     Reader: 'Reader',
   }
 
   const TIER_COLORS = {
-    InnerCircle: 'text-gold/70',
     Community: 'text-sky-400/60',
     Reader: 'text-parchment/30',
   }
@@ -241,8 +239,7 @@ function SubscribersPanel() {
             onChange={e => setTier(e.target.value as typeof tier)}
             className="bg-transparent border border-parchment/12 rounded-xl px-4 py-2.5 text-sm text-parchment/60 focus:outline-none focus:border-parchment/25 transition-colors"
           >
-            <option value="InnerCircle">Inner Circle — submit + vote</option>
-            <option value="Community">Community — vote only</option>
+            <option value="Community">Community — submit + vote</option>
             <option value="Reader">Reader — read only</option>
           </select>
           <button className="border border-gold/25 text-gold/70 px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-gold/8 hover:text-gold hover:border-gold/40 transition-all">

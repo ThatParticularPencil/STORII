@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Lock, ArrowRight, Share2, CheckCircle2, BarChart2, Loader2, Copy, Check, Sparkles } from 'lucide-react'
 import { useRole } from '@/context/RoleContext'
@@ -15,6 +15,7 @@ const MAX_PARAGRAPHS = 8
 
 export default function PieceView() {
   const { pieceId } = useParams()
+  const location = useLocation()
   const [showDetails, setShowDetails] = useState(false)
   const [selectedPara, setSelectedPara] = useState<number | null>(null)
 
@@ -22,7 +23,10 @@ export default function PieceView() {
   const isCreator = role === 'creator'
   const [copied, setCopied] = useState(false)
 
-  const { piece, loading, error } = usePiece(pieceId)
+  const preserveDemoProgress = location.state?.preserveDemoProgress === true
+  const { piece, loading, error } = usePiece(pieceId, {
+    resetDemoOnLoad: !preserveDemoProgress,
+  })
 
   const handleCopyScript = () => {
     if (!piece) return
@@ -207,7 +211,9 @@ export default function PieceView() {
                 {isLatest && (
                   <div className="flex items-center gap-2 mb-3">
                     <Sparkles size={11} className="text-gold/60" />
-                    <span className="text-[10px] uppercase tracking-widest text-gold/50 font-medium">Latest scene · written by Gemini</span>
+                    <span className="text-[10px] uppercase tracking-widest text-gold/50 font-medium">
+                      Latest scene · expanded from the winning choice
+                    </span>
                   </div>
                 )}
                 <SealedParagraphCard

@@ -41,6 +41,7 @@ export interface StoredParagraph {
   author: string
   sealedAt: number
   voteCount: number
+  winningDirection?: string
 }
 
 export interface StoredPiece {
@@ -95,6 +96,9 @@ const RUNOFF_MINUTES = 0.5  // 30 seconds
  * Advance a round's status based on elapsed deadlines.
  * Called every time the piece is fetched so the frontend never needs to POST
  * transition endpoints just to unblock itself.
+ * Works for both real and demo pieces — demo-live-2 is safe because
+ * maybeAdvanceRound only handles Submissions→Voting and Voting→Runoff,
+ * never touches Runoff status (the frontend handles Runoff→Closed via /finalize).
  */
 export function maybeAdvanceRound(piece: StoredPiece): void {
   const round = getActiveRound(piece)
@@ -175,6 +179,10 @@ export function createPiece(opts: {
   pieces.set(id, piece)
   console.log(`[pieceStore] Created "${opts.title}" id=${id}`)
   return piece
+}
+
+export function removePiece(id: string): boolean {
+  return pieces.delete(id)
 }
 
 export function addSubmission(opts: {
@@ -313,6 +321,7 @@ export function sealRound(opts: {
     author: 'gemini',
     sealedAt: Date.now(),
     voteCount: winningSub?.runoffVoteCount ?? winningSub?.voteCount ?? 0,
+    winningDirection: winningSub?.content ?? '',
   })
 
   const nextIndex = opts.roundIndex + 1

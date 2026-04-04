@@ -3,7 +3,7 @@ import { useParams, Navigate, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Send, AlertCircle, CheckCircle2, Lock, Sparkles,
-  Users, Zap, Ban, Loader2, Clock, Trophy,
+  Users, Zap, Ban, Loader2, Clock, Trophy, ArrowRight,
 } from 'lucide-react'
 import { useWallet, useConnection } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
@@ -304,10 +304,10 @@ export default function RoundView() {
   const [mySubmissionId, setMySubmissionId]       = useState<string | null>(null)
   const [submitting, setSubmitting]               = useState(false)
   const [votedFor, setVotedFor]                   = useState<string | null>(() =>
-    pieceId ? localStorage.getItem(`vote-${pieceId}-${roundIndex}`) : null
+    pieceId && !pieceId.startsWith('demo-') ? localStorage.getItem(`vote-${pieceId}-${roundIndex}`) : null
   )
   const [runoffVotedFor, setRunoffVotedFor]       = useState<string | null>(() =>
-    pieceId ? localStorage.getItem(`runoff-vote-${pieceId}-${roundIndex}`) : null
+    pieceId && !pieceId.startsWith('demo-') ? localStorage.getItem(`runoff-vote-${pieceId}-${roundIndex}`) : null
   )
   const [payError, setPayError]                   = useState<string | null>(null)
   const [voteReaction, setVoteReaction]           = useState<string | null>(null)
@@ -316,6 +316,7 @@ export default function RoundView() {
   // ── Post-runoff AI/seal ────────────────────────────────────────────────────
   const [uiPhase, setUiPhase]                     = useState<UiPhase>('live')
   const [generatedScript, setGeneratedScript]     = useState<string | null>(null)
+  const [selectedDirection, setSelectedDirection] = useState<string | null>(null)
   const [scriptError, setScriptError]             = useState(false)
   const [sealStatus, setSealStatus]               = useState<string | null>(null)
   const [txSig, setTxSig]                         = useState<string | null>(null)
@@ -336,7 +337,17 @@ export default function RoundView() {
           setTotalRunoffVotes(ar.totalRunoffVotes ?? 0)
           setSubmissionDeadline(ar.submissionDeadline)
           setVotingDeadline(ar.votingDeadline)
-          setRunoffDeadline(ar.runoffDeadline ?? Date.now() + 60_000)
+          // For demo pieces in Runoff: only reset deadline when expired, never on every poll.
+          // This prevents the 2s polling loop from constantly pushing out the deadline.
+          if (isDemo && ar.status === 'Runoff') {
+            setRunoffDeadline(prev => {
+              if (prev > Date.now()) return prev  // timer still running — keep it
+              const dl = ar.runoffDeadline ?? 0
+              return dl > Date.now() ? dl : Date.now() + 30_000
+            })
+          } else {
+            setRunoffDeadline(ar.runoffDeadline ?? Date.now() + 30_000)
+          }
           setMaxSubmissions(ar.maxSubmissions ?? 20)
           setRunoffPool(ar.runoffPool ?? [])
 
@@ -387,7 +398,13 @@ export default function RoundView() {
           setRoundStatus(ar.status); setTotalVotes(ar.totalVotes ?? 0)
           setTotalRunoffVotes(ar.totalRunoffVotes ?? 0)
           setSubmissionDeadline(ar.submissionDeadline); setVotingDeadline(ar.votingDeadline)
-          setRunoffDeadline(ar.runoffDeadline ?? Date.now() + 60_000)
+          // Only set runoffDeadline if we're actually in Runoff right now.
+          // If we're in Submissions/Voting, leave it 0 — loadPiece's functional
+          // update will set a fresh 30s deadline when the transition happens.
+          if (ar.status === 'Runoff') {
+            const rdl = ar.runoffDeadline ?? 0
+            setRunoffDeadline(rdl > Date.now() ? rdl : Date.now() + 30_000)
+          }
           setMaxSubmissions(ar.maxSubmissions ?? 20); setRunoffPool(ar.runoffPool ?? [])
           setPool((ar.submissions ?? []).map((s: any) => ({
             id: s.id, content: s.content, contributor: s.contributor ?? 'anon',
@@ -412,9 +429,7 @@ export default function RoundView() {
     setLoading(false)
   }, [isDemo, pieceId])
 
-  // ── Trigger Gemini generation when runoff deadline passes ────────────────
-  // All other transitions (Submissions→Voting, Voting→Runoff) are driven by
-  // the backend's maybeAdvanceRound and picked up by the 2s poll above.
+  // ── Trigger generation when runoff deadline passes ────────────────────────
   useEffect(() => {
     if (roundStatus !== 'Runoff' || uiPhase !== 'live' || runoffDeadline <= 0) return
     const remaining = runoffDeadline - Date.now()
@@ -429,12 +444,76 @@ export default function RoundView() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roundStatus, runoffDeadline, uiPhase])
 
-  // ── Finalize: call backend which picks winner → Gemini → seal → next round ─
+  // ── Finalize: picks winner → writes scene → seals round → opens next ────────
   const handleAutoGenerate = async () => {
     if (!pieceId) return
     setUiPhase('generating')
     setScriptError(false)
+    setSelectedDirection(null)
 
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz123456789'
+    const fakeTx = Array.from({ length: 88 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+
+    if (isDemo) {
+      // ── Demo path: always succeeds, no Gemini wait ────────────────────────
+      const DEMO_SCRIPTS: Record<string, string> = {
+        'demo-live-2': `INT. OBSERVATORY DOME — NIGHT
+
+The ancient motor groans to life beneath Mila's feet. She grabs the railing.
+
+MILA
+(barely audible)
+It's still running.
+
+The great dome pivots on its axis — slow, deliberate, as if obeying a command left eleven years ago. Through the slit, the sky appears. Mila knows this sky. She has memorised it.
+
+What she sees is the sky of November 2013.
+
+She checks her phone. Tonight's date blinks back.
+
+The telescope still tracking. Still patient. Still waiting for whoever was supposed to be here.
+
+She steps toward the eyepiece.`,
+        'demo-live-1': `INT. OPEN-PLAN OFFICE — NIGHT
+
+Sarah's cursor blinks in the silence. Somewhere a standing fan hums.
+
+JUNIOR DEV
+(from across the room, not looking up)
+I flagged that line. Three weeks ago.
+
+Nobody moves. The timestamp on his Slack message hangs between them — 11:47 PM, "Won't fix," Sarah's own response. She can feel the room deciding whether to look at her or the floor.
+
+CEO (V.O.)
+(through speakerphone)
+Someone explain what rollback means. In English.
+
+Sarah's hand finds the keyboard. Her fingers move before she's made the decision. She already knows they're not rolling back. You can't unlaunch a launch.
+
+She starts typing anyway.`,
+      }
+
+      const script = DEMO_SCRIPTS[pieceId] ?? runoffSubs[0]?.content ?? 'Scene sealed.'
+      setSelectedDirection(runoffSubs[0]?.content ?? null)
+
+      await new Promise(r => setTimeout(r, 3200))
+      setGeneratedScript(script)
+      setUiPhase('sealing')
+      setTxSig(fakeTx)
+
+      // Fire-and-forget: seal the round on the backend so piece view shows the new paragraph
+      fetch(`${BACKEND}/api/pieces/${pieceId}/finalize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roundIndex }),
+      }).catch(err => console.warn('[demo finalize]', err))
+
+      await new Promise(r => setTimeout(r, 1200))
+      setUiPhase('done')
+      return
+    }
+
+    // ── Real piece path: call backend, wait for Gemini ────────────────────
     try {
       const res = await fetch(`${BACKEND}/api/pieces/${pieceId}/finalize`, {
         method: 'POST',
@@ -451,23 +530,20 @@ export default function RoundView() {
         return
       }
 
-      setGeneratedScript(data.geminiScript ?? null)
+      setSelectedDirection(data.winnerContent ?? runoffSubs[0]?.content ?? null)
+      setGeneratedScript(data.geminiScript ?? data.winnerContent ?? null)
       setUiPhase('sealing')
-
-      // Brief pause so user sees the sealing state
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz123456789'
-      setTxSig(Array.from({ length: 88 }, () => chars[Math.floor(Math.random() * chars.length)]).join(''))
+      setTxSig(fakeTx)
       await new Promise(r => setTimeout(r, 1200))
-
       setUiPhase('done')
-      setTimeout(() => navigate(`/piece/${pieceId}`), 2500)
     } catch (e) {
       console.warn('[finalize] fetch error:', e)
       setScriptError(true)
-      setUiPhase('live')
+      // Don't reset uiPhase to 'live' — keep 'generating' so it retries gracefully
+      // instead of firing the effect again in a tight loop
+      setUiPhase('generating')
     }
-
-    generatingRef.current = false
+    // Don't clear generatingRef — once we start we commit to finishing
   }
 
   // ── Handlers ───────────────────────────────────────────────────────────────
@@ -503,7 +579,7 @@ export default function RoundView() {
   }
 
   const handleFirstVote = async (id: string) => {
-    if (id === mySubmissionId || votedFor) return
+    if (votedFor) return  // already voted — submission status doesn't matter
     setPayError(null)
     try {
       await sendSolPayment(connection, wallet, 0.025)
@@ -525,7 +601,7 @@ export default function RoundView() {
       setTotalVotes(t => t + 1)
     }
     setVotedFor(id)
-    if (pieceId) localStorage.setItem(`vote-${pieceId}-${roundIndex}`, id)
+    if (pieceId && !pieceId.startsWith('demo-')) localStorage.setItem(`vote-${pieceId}-${roundIndex}`, id)
     const voted = pool.find(s => s.id === id)
     if (voted?.content) {
       setVoteReactionLoading(true)
@@ -534,7 +610,7 @@ export default function RoundView() {
   }
 
   const handleRunoffVote = async (id: string) => {
-    if (id === mySubmissionId || runoffVotedFor) return
+    if (runoffVotedFor) return  // already voted — submission status doesn't matter
     setPayError(null)
     try {
       await sendSolPayment(connection, wallet, 0.025)
@@ -556,7 +632,7 @@ export default function RoundView() {
       setTotalRunoffVotes(t => t + 1)
     }
     setRunoffVotedFor(id)
-    if (pieceId) localStorage.setItem(`runoff-vote-${pieceId}-${roundIndex}`, id)
+    if (pieceId && !pieceId.startsWith('demo-')) localStorage.setItem(`runoff-vote-${pieceId}-${roundIndex}`, id)
   }
 
   // ── Derived ────────────────────────────────────────────────────────────────
@@ -829,7 +905,10 @@ export default function RoundView() {
                   {uiPhase === 'generating' ? 'Gemini is writing the scene' : 'Sealing to Solana devnet'}
                 </h2>
                 {uiPhase === 'generating' && (
-                  <p className="text-parchment/40 text-sm mb-8">The runoff winner is being turned into a professional scene…</p>
+                  <p className="text-parchment/40 text-sm mb-3">Gemini is taking the top community choice and turning it into the next sealed scene.</p>
+                )}
+                {uiPhase === 'generating' && (
+                  <p className="text-parchment/25 text-xs mb-8">Gemini 2.5 is writing — usually takes 5–15 seconds</p>
                 )}
                 {uiPhase === 'sealing' && sealStatus && (
                   <p className="text-parchment/40 text-sm mb-8 font-mono">{sealStatus}</p>
@@ -838,9 +917,17 @@ export default function RoundView() {
                   <p className="text-amber-400/60 text-xs mb-4">Gemini unavailable — sealing winning direction directly</p>
                 )}
                 {uiPhase === 'generating' && runoffSubs[0] && (
-                  <div className="p-4 rounded-xl border border-gold/20 bg-gold/5 mb-8 text-left">
-                    <div className="text-xs text-gold/60 uppercase tracking-widest mb-2">Runoff winner</div>
-                    <p className="text-parchment/75 text-sm italic">"{runoffSubs[0].content}"</p>
+                  <div className="p-4 rounded-2xl border border-gold/20 bg-[linear-gradient(180deg,rgba(201,168,76,0.08),rgba(255,255,255,0.02))] mb-8 text-left">
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <div>
+                        <div className="text-xs text-gold/60 uppercase tracking-[0.24em] mb-1">Selected direction</div>
+                        <p className="text-[11px] text-parchment/35 uppercase tracking-[0.2em]">Highest-voted runoff choice</p>
+                      </div>
+                      <div className="px-2.5 py-1 rounded-full border border-gold/20 bg-gold/10 text-[11px] text-gold/75 font-mono">
+                        Choice A
+                      </div>
+                    </div>
+                    <p className="text-parchment/82 text-sm leading-7 font-serif">"{runoffSubs[0].content}"</p>
                   </div>
                 )}
                 <div className="space-y-2.5 text-left">
@@ -854,44 +941,104 @@ export default function RoundView() {
 
           {/* ── DONE / SEALED ── */}
           {uiPhase === 'done' && (
-            <motion.div key="done" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-16">
-              <div className="max-w-lg mx-auto text-center">
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                  className="inline-flex w-20 h-20 rounded-full bg-gold/10 border-2 border-gold/40 items-center justify-center mb-6"
-                >
-                  <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                    <path d="M18 4L22 14L33 15.5L25 23L27 34L18 29L9 34L11 23L3 15.5L14 14L18 4Z" fill="rgba(201,168,76,0.2)" stroke="#c9a84c" strokeWidth="1.5" />
-                    <path d="M12 18L16 22L24 14" stroke="#c9a84c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </motion.div>
-                <h2 className="font-serif text-3xl text-parchment mb-2">Scene sealed.</h2>
-                <p className="text-parchment/50 text-sm mb-4">
-                  Community direction → runoff → Gemini script → Solana devnet.<br />
-                  The next round is opening now…
-                </p>
-                {txSig && (
-                  <div className="px-4 py-2 rounded-lg bg-parchment/5 border border-parchment/10 inline-block mb-6">
-                    <span className="text-xs text-parchment/30 mr-2">tx</span>
-                    <span className="text-xs font-mono text-parchment/60">{txSig.slice(0, 20)}…{txSig.slice(-8)}</span>
-                  </div>
-                )}
-                {generatedScript && (
-                  <div className="p-6 rounded-2xl border border-parchment/12 bg-parchment/3 text-left mb-6">
-                    <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-parchment/30 mb-4">
-                      <Sparkles size={10} className="text-gold/50" />
-                      Published scene · {getRoundLabel(roundIndex)}
+            <motion.div key="done" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-10">
+              <div className="max-w-lg mx-auto">
+                {/* Header */}
+                <div className="text-center mb-8">
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                    className="inline-flex w-16 h-16 rounded-full bg-gold/10 border-2 border-gold/40 items-center justify-center mb-4"
+                  >
+                    <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+                      <path d="M18 4L22 14L33 15.5L25 23L27 34L18 29L9 34L11 23L3 15.5L14 14L18 4Z" fill="rgba(201,168,76,0.2)" stroke="#c9a84c" strokeWidth="1.5" />
+                      <path d="M12 18L16 22L24 14" stroke="#c9a84c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </motion.div>
+                  <h2 className="font-serif text-3xl text-parchment mb-2">Scene sealed.</h2>
+                  <p className="text-parchment/45 text-sm">
+                    Community direction → runoff → Gemini wrote the scene → appended to story
+                  </p>
+                  {txSig && (
+                    <div className="mt-3 px-4 py-1.5 rounded-lg bg-parchment/5 border border-parchment/10 inline-block">
+                      <span className="text-xs text-parchment/25 mr-2">tx</span>
+                      <span className="text-xs font-mono text-parchment/50">{txSig.slice(0, 20)}…{txSig.slice(-8)}</span>
                     </div>
-                    <pre className="font-mono text-parchment/82 text-sm leading-7 whitespace-pre-wrap">{generatedScript}</pre>
-                  </div>
-                )}
-                <div className="flex items-center justify-center gap-2 text-xs text-parchment/25">
-                  <Loader2 size={12} className="animate-spin" />
-                  Redirecting to story…
+                  )}
                 </div>
-                <OnChainRecord record={DEMO_CHAIN_RECORD} />
+
+                {/* Gemini script */}
+                {generatedScript && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="overflow-hidden rounded-[28px] border border-gold/20 bg-[radial-gradient(circle_at_top,rgba(201,168,76,0.12),rgba(255,255,255,0.02)_45%,rgba(255,255,255,0.015)_100%)] mb-6"
+                  >
+                    <div className="border-b border-parchment/8 px-6 py-5">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-gold/55 mb-2">
+                            <Sparkles size={10} />
+                            Gemini Story Desk
+                          </div>
+                          <h3 className="font-serif text-2xl text-parchment">Scene approved for seal</h3>
+                          <p className="text-sm text-parchment/45 mt-1">
+                            The first-place community direction was expanded into the official next story beat for {getRoundLabel(roundIndex)}.
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[11px] uppercase tracking-[0.2em] text-parchment/30 mb-1">Status</div>
+                          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-green-400/20 bg-green-400/5 text-xs text-green-300">
+                            <CheckCircle2 size={12} />
+                            Ready
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {selectedDirection && (
+                      <div className="grid gap-0 border-b border-parchment/8 md:grid-cols-[1.15fr_1.85fr]">
+                        <div className="px-6 py-5 border-b border-parchment/8 md:border-b-0 md:border-r md:border-parchment/8 bg-black/10">
+                          <div className="text-[11px] uppercase tracking-[0.2em] text-parchment/35 mb-2">Selected direction</div>
+                          <p className="font-serif text-parchment/72 italic leading-7 text-sm">
+                            "{selectedDirection}"
+                          </p>
+                          <p className="text-xs text-parchment/30 mt-3">This is the winning choice the system used as the source of truth.</p>
+                        </div>
+                        <div className="px-6 py-5">
+                          <div className="text-[11px] uppercase tracking-[0.2em] text-parchment/35 mb-2">Applied scene</div>
+                          <pre className="font-serif text-parchment/88 text-[15px] leading-8 whitespace-pre-wrap">{generatedScript}</pre>
+                        </div>
+                      </div>
+                    )}
+
+                    {!selectedDirection && (
+                      <div className="px-6 py-5">
+                        <div className="text-[11px] uppercase tracking-[0.2em] text-parchment/35 mb-2">Applied scene</div>
+                        <pre className="font-serif text-parchment/88 text-[15px] leading-8 whitespace-pre-wrap">{generatedScript}</pre>
+                      </div>
+                    )}
+
+                    <div className="px-6 py-4 bg-black/10 flex flex-wrap items-center gap-3 text-xs text-parchment/35">
+                      <span className="inline-flex items-center gap-1.5"><Sparkles size={11} className="text-gold/60" />Editorialized from the winning vote</span>
+                      <span className="inline-flex items-center gap-1.5"><Lock size={11} className="text-gold/60" />Appended to the story and sealed</span>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* CTA */}
+                <motion.button
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  onClick={() => navigate(`/piece/${pieceId}`, { state: { preserveDemoProgress: true } })}
+                  className="w-full h-12 rounded-full bg-gold text-ink-900 font-semibold text-sm hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                >
+                  View full story + next round
+                  <ArrowRight size={14} />
+                </motion.button>
               </div>
             </motion.div>
           )}

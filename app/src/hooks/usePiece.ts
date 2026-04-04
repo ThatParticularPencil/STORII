@@ -85,7 +85,9 @@ function buildDemoPiece(): LivePiece {
       status:             DEMO_ACTIVE_ROUND.status as 'Voting',
       submissionDeadline: DEMO_ACTIVE_ROUND.submissionDeadline,
       votingDeadline:     DEMO_ACTIVE_ROUND.votingDeadline,
+      runoffDeadline:     0,
       totalVotes:         DEMO_ACTIVE_ROUND.totalVotes,
+      totalRunoffVotes:   0,
       submissionCount:    DEMO_ACTIVE_ROUND.submissionCount,
       maxSubmissions:     50,
       winningSubmission:  null,
@@ -109,6 +111,7 @@ function apiToPiece(data: any): LivePiece {
     isOpening:   p.isOpening ?? false,
     content:     p.content ?? null,
     authorHandle: p.author ? `${p.author.slice(0, 4)}…${p.author.slice(-4)}` : undefined,
+    winningDirection: p.winningDirection ?? undefined,
   }))
 
   const ar = data.activeRound
@@ -143,17 +146,18 @@ function apiToPiece(data: any): LivePiece {
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
-export function usePiece(pieceId: string | undefined) {
+export function usePiece(pieceId: string | undefined, options?: { resetDemoOnLoad?: boolean }) {
   const [piece, setPiece]   = useState<LivePiece | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError]   = useState<string | null>(null)
-  const isDemo = !pieceId || pieceId.startsWith('demo-')
+  const useStaticDemo = !pieceId || pieceId.startsWith('demo-piece-')
 
   useEffect(() => {
     if (!pieceId) { setLoading(false); return }
 
-    // Demo IDs: use hardcoded demo data instantly
-    if (isDemo) {
+    // Legacy demo IDs: use hardcoded demo data instantly.
+    // Live demo IDs like demo-live-1 should hit the backend so the story can advance.
+    if (useStaticDemo) {
       setPiece(buildDemoPiece())
       setLoading(false)
       return
@@ -162,7 +166,12 @@ export function usePiece(pieceId: string | undefined) {
     setLoading(true)
     setError(null)
 
-    fetch(`${BACKEND}/api/pieces/${pieceId}`)
+    const params = new URLSearchParams()
+    if (options?.resetDemoOnLoad && pieceId.startsWith('demo-live-')) {
+      params.set('resetDemo', '1')
+    }
+
+    fetch(`${BACKEND}/api/pieces/${pieceId}${params.size > 0 ? `?${params.toString()}` : ''}`)
       .then(async r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json()
@@ -177,7 +186,7 @@ export function usePiece(pieceId: string | undefined) {
         if (pieceId === DEMO_PIECE.id) setPiece(buildDemoPiece())
       })
       .finally(() => setLoading(false))
-  }, [pieceId])
+  }, [pieceId, useStaticDemo, options?.resetDemoOnLoad])
 
   return { piece, loading, error }
 }

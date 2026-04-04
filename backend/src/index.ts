@@ -98,45 +98,68 @@ if (solanaListenerEnabled) {
 // ── Seed demo stories ─────────────────────────────────────────────────────────
 
 function seedDemoData() {
-  const MIN = 0.5 / 60  // 30 seconds expressed as hours
+  const now = Date.now()
+  const DEMO_WINDOW = 30_000  // 30-second stage windows
 
-  // Demo 1 — open for viewers to submit (1 min submission window, 1 min voting)
+  // ── Demo 1 — RUNOFF stage in Round 1 (Product Launch) ───────────────────
   const p1 = pieceStore.createPiece({
     id: 'demo-live-1',
     title: 'It Was the Night Before the Product Launch',
     creator: '8HQpXR2k...3xRt',
     openingText: 'It was the night before the product launch and everything was about to go wrong. Sarah stared at the terminal output, the cursor blinking like a nervous heartbeat. Three hours until the presentation. Fourteen minutes of deployment logs. And somewhere in that wall of green text, the reason their entire authentication service had just gone silent.',
-    submissionHours: MIN,
-    votingHours: MIN,
+    submissionHours: 0.001,
+    votingHours: 0.001,
     maxSubmissions: 20,
   })
-  // Pre-seed some directions so the pool isn't empty
   ;[
     { contributor: '5pNm...8kLj', content: 'Cut to the whole team watching the dashboard refresh. Nobody speaks. The on-call Slack goes silent. Someone outside — a journalist — is already writing the story of the failed launch.' },
     { contributor: '2wXq...5mRo', content: 'Reveal it was the intern who rotated the deploy keys during the security audit. She didn\'t update the env variables. Her hand is half-raised, voice barely audible. The room temperature drops.' },
     { contributor: '9cYs...3vPt', content: 'VP calls in on speakerphone. He gives them twenty minutes. Cold voice, past anger. In the background before he hangs up the CEO can be heard asking what "rollback" means.' },
+    { contributor: 'nR5c...6dLm', content: 'Show the junior dev who flagged this exact line in code review three weeks ago. Closed as "won\'t fix". He hasn\'t said a word since the terminal went red.' },
+    { contributor: 'fT8j...0xBu', content: 'The staging environment is fine. It\'s only production that\'s silent. Sarah realises the logs show a config that shouldn\'t exist — one she didn\'t write.' },
+    { contributor: 'qZ7m...4tPy', content: 'Sarah\'s phone buzzes: a calendar invite from a blocked number. "Post-mortem" — dated three days ago. Someone knew.' },
   ].forEach(s => pieceStore.addSubmission({ pieceId: p1.id, roundIndex: 0, contributor: s.contributor, content: s.content, contentHash: s.contributor }))
 
-  // Demo 2 — voting open, further along in the story (1 min voting window)
+  const r1 = p1.rounds.get(0)!
+  Array.from(r1.submissions.values()).forEach((sub, index) => {
+    sub.voteCount = [143, 98, 87, 64, 42, 31][index] ?? 0
+    r1.totalVotes += sub.voteCount
+  })
+  const p1Finalists = Array.from(r1.submissions.values()).sort((a, b) => b.voteCount - a.voteCount).slice(0, 5)
+  r1.runoffPool = p1Finalists.map(s => s.id)
+  r1.status = 'Runoff'
+  r1.submissionDeadline = now - 2_000
+  r1.votingDeadline = now - 1_000
+  r1.runoffDeadline = now + DEMO_WINDOW
+  p1Finalists.forEach((sub, index) => {
+    sub.runoffVoteCount = [61, 48, 41, 29, 17][index] ?? 0
+    r1.totalRunoffVotes += sub.runoffVoteCount
+  })
+
+  // ── Demo 2 — SUBMISSIONS stage in Round 1 (Observatory) ──────────────────
   const p2 = pieceStore.createPiece({
     id: 'demo-live-2',
     title: 'The Last Summer at the Observatory',
     creator: '@stargazer_mila',
     openingText: 'The dome had not been opened in eleven years. Mila pressed her palm against the cold steel hatch and felt the old mechanism shudder — not quite stuck, not quite willing. The last person to look through this telescope had gone up one August evening and never come back down. Nobody talked about that. The grant committee certainly hadn\'t.',
-    submissionHours: MIN,
-    votingHours: MIN,
+    submissionHours: 0.001,
+    votingHours: 0.001,
     maxSubmissions: 20,
   })
-  // Move to voting stage with submissions already in
   ;[
     { contributor: 'nR5c...6dLm', content: 'Show what Mila finds on the telescope\'s notepad. The last observer left coordinates — not for any star in any catalogue. Something hand-calculated, obsessively corrected.' },
-    { contributor: 'fT8j...0xBu', content: 'Cut to the grant committee files. One page is redacted. The name of the last observer has been replaced with a case number. Mila recognises the handwriting on the sticky note flagging it.', },
+    { contributor: 'fT8j...0xBu', content: 'Cut to the grant committee files. One page is redacted. The name of the last observer has been replaced with a case number. Mila recognises the handwriting on the sticky note flagging it.' },
     { contributor: 'qZ7m...4tPy', content: 'The dome motor starts on its own. Not the hatch — the main rotation drive. Something up there is still running on the old schedule.' },
     { contributor: 'hV2k...9wQs', content: 'Show the logbook from eleven years ago. Every entry is meticulous science until the last week, where the handwriting changes — smaller, faster, like something was being hidden inside the margin.' },
+    { contributor: '7tKp...2nWz', content: 'The dome opens on a sky that doesn\'t match the date. The stars are wrong. Not by much — by exactly eleven years.' },
   ].forEach(s => pieceStore.addSubmission({ pieceId: p2.id, roundIndex: 0, contributor: s.contributor, content: s.content, contentHash: s.contributor }))
-  pieceStore.moveRoundToVoting(p2.id, 0)
 
-  console.log('[seed] Demo stories seeded:', p1.id, p2.id)
+  const r2 = p2.rounds.get(0)!
+  r2.status = 'Submissions'
+  r2.submissionDeadline = now + DEMO_WINDOW
+  r2.votingDeadline = now + DEMO_WINDOW * 2
+
+  console.log('[seed] Demo stories seeded:', p1.id, '(Runoff)', p2.id, '(Submissions)')
 }
 
 seedDemoData()

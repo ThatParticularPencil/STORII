@@ -4,7 +4,7 @@ import { shortenAddress, formatTimestamp, explorerAccountUrl } from '@/utils/sol
 import type { SealedParagraph } from '@/types'
 
 interface SealedParagraphCardProps {
-  paragraph: SealedParagraph & { content?: string; authorHandle?: string }
+  paragraph: SealedParagraph & { content?: string; authorHandle?: string; winningDirection?: string }
   index: number
   showChainDetails?: boolean
 }
@@ -79,7 +79,7 @@ export default function SealedParagraphCard({
                 <div className="p-4 rounded-xl bg-gold/[0.06] border border-gold/20">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-[10px] uppercase tracking-widest text-gold/60 font-medium">Winning direction</span>
-                    <span className="text-[10px] text-parchment/25">· the prompt before Gemini expanded it</span>
+                    <span className="text-[10px] text-parchment/25">· the first choice that drove the sealed scene</span>
                   </div>
                   <p className="font-serif italic text-parchment/70 text-sm leading-relaxed">
                     "{paragraph.winningDirection}"
