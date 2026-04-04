@@ -1,70 +1,175 @@
 import { Router } from 'express'
-import { v4 as uuidv4 } from 'uuid'
-import { uploadContent } from '../services/content'
+import { uploadContent, contentStore, fetchArweaveContent } from '../services/content'
+import {
+  fetchAllPieces,
+  fetchPieceParagraphs,
+  fetchRoundForPiece,
+  buildFullPiece,
+  type FullPiece,
+} from '../services/chainReader'
 
 const router = Router()
 
-// In-memory store (replace with DB in production)
-const pieces = new Map<string, any>()
+// ── Short-lived cache so we don't hammer devnet on every page load ────────────
 
-// GET /api/pieces — list all pieces (paginated)
-router.get('/', (req, res) => {
-  const page = parseInt(req.query.page as string || '1', 10)
-  const limit = parseInt(req.query.limit as string || '20', 10)
-  const arr = Array.from(pieces.values())
-  res.json({
-    pieces: arr.slice((page - 1) * limit, page * limit),
-    total: arr.length,
-    page,
-  })
-})
+interface CacheEntry { data: any; fetchedAt: number }
+const cache = new Map<string, CacheEntry>()
+const CACHE_TTL_MS = 30_000  // 30 seconds
 
-// GET /api/pieces/:pieceId — get a single piece with paragraphs
-router.get('/:pieceId', (req, res) => {
-  const piece = pieces.get(req.params.pieceId)
-  if (!piece) return res.status(404).json({ error: 'Piece not found' })
-  res.json(piece)
-})
+function cached(key: string): any | null {
+  const e = cache.get(key)
+  if (e && Date.now() - e.fetchedAt < CACHE_TTL_MS) return e.data
+  return null
+}
+function setCache(key: string, data: any) {
+  cache.set(key, { data, fetchedAt: Date.now() })
+}
+function bustCache(key?: string) {
+  if (key) cache.delete(key)
+  else cache.clear()
+}
 
-// POST /api/pieces — register a new piece (called after on-chain create_piece)
-router.post('/', async (req, res) => {
-  const { title, openingText, creatorWallet, chainPieceId } = req.body
-  if (!title || !openingText || !creatorWallet) {
-    return res.status(400).json({ error: 'title, openingText, and creatorWallet are required' })
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+/** Converts a ChainParagraph + content into the shape the frontend expects */
+function serializeParagraph(p: any) {
+  return {
+    index:       p.index,
+    contentHash: p.contentHash,
+    arweaveUri:  p.arweaveUri,
+    author:      p.author,
+    sealedAt:    p.sealedAt * 1000,   // → ms for frontend
+    voteCount:   p.voteCount,
+    isOpening:   p.isOpening,
+    content:     p.content ?? null,
+    pubkey:      p.pubkey,
   }
+}
+
+function serializePiece(full: FullPiece) {
+  const activeRound = full.activeRound
+  return {
+    id:             full.pubkey,
+    title:          full.title,
+    status:         full.status,
+    paragraphCount: full.paragraphCount,
+    roundCount:     full.roundCount,
+    createdAt:      full.createdAt * 1000,
+    creator:        full.creator,
+    paragraphs:     full.paragraphs.map(serializeParagraph),
+    activeRound: activeRound ? {
+      pubkey:             activeRound.pubkey,
+      roundIndex:         activeRound.roundIndex,
+      status:             activeRound.status,
+      submissionDeadline: activeRound.submissionDeadline * 1000,
+      votingDeadline:     activeRound.votingDeadline * 1000,
+      totalVotes:         activeRound.totalVotes,
+      submissionCount:    activeRound.submissionCount,
+      maxSubmissions:     activeRound.maxSubmissions,
+      winningSubmission:  activeRound.winningSubmission,
+      creatorNote:        activeRound.creatorNote,
+    } : null,
+  }
+}
+
+// ── Routes ────────────────────────────────────────────────────────────────────
+
+/**
+ * GET /api/pieces
+ * Returns all pieces on-chain, with basic metadata (no paragraphs).
+ */
+router.get('/', async (_req, res) => {
+  try {
+    const cacheKey = '__all_pieces__'
+    const hit = cached(cacheKey)
+    if (hit) return res.json(hit)
+
+    const pieces = await fetchAllPieces()
+
+    // Enrich with round data for the active round indicator
+    const enriched = await Promise.all(
+      pieces.map(async (piece) => {
+        const rounds = await fetchRoundForPiece(piece.pubkey)
+        const activeRound = rounds.find(r => r.status !== 'Closed') ?? rounds[rounds.length - 1] ?? null
+        return {
+          id:             piece.pubkey,
+          title:          piece.title,
+          status:         piece.status,
+          paragraphCount: piece.paragraphCount,
+          roundCount:     piece.roundCount,
+          createdAt:      piece.createdAt * 1000,
+          creator:        piece.creator,
+          activeRound:    activeRound ? {
+            pubkey:      activeRound.pubkey,
+            roundIndex:  activeRound.roundIndex,
+            status:      activeRound.status,
+            totalVotes:  activeRound.totalVotes,
+            votingDeadline: activeRound.votingDeadline * 1000,
+          } : null,
+        }
+      })
+    )
+
+    const result = { pieces: enriched, total: enriched.length }
+    setCache(cacheKey, result)
+    res.json(result)
+  } catch (err: any) {
+    console.error('[pieces] fetchAllPieces error:', err?.message)
+    res.status(500).json({ error: 'Failed to fetch pieces from chain', pieces: [], total: 0 })
+  }
+})
+
+/**
+ * GET /api/pieces/:pieceId
+ * Returns full piece with all paragraphs and their content (fetched from Arweave / backend store).
+ */
+router.get('/:pieceId', async (req, res) => {
+  const { pieceId } = req.params
+  try {
+    const cacheKey = `piece:${pieceId}`
+    const hit = cached(cacheKey)
+    if (hit) return res.json(hit)
+
+    const full = await buildFullPiece(pieceId, contentStore)
+    if (!full) return res.status(404).json({ error: 'Piece not found on chain' })
+
+    const result = serializePiece(full)
+    setCache(cacheKey, result)
+    res.json(result)
+  } catch (err: any) {
+    console.error('[pieces] buildFullPiece error:', err?.message)
+    res.status(500).json({ error: 'Failed to fetch piece from chain' })
+  }
+})
+
+/**
+ * POST /api/pieces
+ * Called by the frontend after create_piece transaction is confirmed.
+ * Stores the opening text in the backend content store (hash → text)
+ * and busts the piece cache so the next GET sees fresh data.
+ */
+router.post('/', async (req, res) => {
+  const { openingText, contentHash, pieceId } = req.body
+  if (!openingText) return res.status(400).json({ error: 'openingText is required' })
 
   const { hash, uri } = await uploadContent(openingText)
+  bustCache(`piece:${pieceId}`)
+  bustCache('__all_pieces__')
 
-  const piece = {
-    id: chainPieceId || uuidv4(),
-    title,
-    creator: creatorWallet,
-    status: 'Active',
-    paragraphs: [
-      {
-        index: 0,
-        content: openingText,
-        hash,
-        uri,
-        author: creatorWallet,
-        isOpening: true,
-        sealedAt: new Date().toISOString(),
-      },
-    ],
-    rounds: [],
-    createdAt: new Date().toISOString(),
-  }
-
-  pieces.set(piece.id, piece)
-  res.status(201).json(piece)
+  res.status(201).json({ hash, uri })
 })
 
-// PATCH /api/pieces/:pieceId/complete
-router.patch('/:pieceId/complete', (req, res) => {
-  const piece = pieces.get(req.params.pieceId)
-  if (!piece) return res.status(404).json({ error: 'Piece not found' })
-  piece.status = 'Complete'
-  res.json(piece)
+/**
+ * POST /api/pieces/:pieceId/content
+ * Store text content for an existing paragraph (e.g. after Gemini generates it).
+ * The on-chain record is authoritative; this just fills in the text for display.
+ */
+router.post('/:pieceId/content', async (req, res) => {
+  const { contentHash, text } = req.body
+  if (!contentHash || !text) return res.status(400).json({ error: 'contentHash and text required' })
+  contentStore.set(contentHash, text)
+  bustCache(`piece:${req.params.pieceId}`)
+  res.json({ ok: true })
 })
 
 export default router

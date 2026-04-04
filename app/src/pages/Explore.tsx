@@ -1,27 +1,13 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Lock, ArrowUpRight } from 'lucide-react'
-import { DEMO_PIECES_EXPLORE } from '@/utils/demo-data'
+import { Lock, ArrowUpRight, Loader2 } from 'lucide-react'
+import { useExplore } from '@/hooks/usePiece'
+import type { ExplorePiece } from '@/hooks/usePiece'
 import { clsx } from 'clsx'
 
-// First lines for each piece — the hook that makes you want to read
-const PIECE_HOOKS: Record<string, string> = {
-  'demo-piece-1': 'It was the night before the product launch and everything was about to go wrong…',
-  'demo-piece-2': 'The last summer at the observatory began the night Dr. Lena Vasquez found the anomaly she had been told didn\'t exist.',
-  'demo-piece-3': 'Protocol Sigma was never supposed to happen. That\'s what they said at the debrief. That\'s what made it worse.',
-  'demo-piece-4': 'Dear City, I\'m not sure you remember me. I left in March. You didn\'t seem to notice.',
-  'demo-piece-5': 'The first thing you learn when building a company is that everyone is lying to you — including yourself.',
-}
-
-const GENRE_STYLES: Record<string, string> = {
-  'Literary Fiction': 'text-sky-400/70',
-  'Sci-Fi Thriller': 'text-purple-400/70',
-  'Personal Essay': 'text-emerald-400/70',
-  'Startup Memoir': 'text-amber-400/70',
-}
-
 export default function Explore() {
-  const activeCount = DEMO_PIECES_EXPLORE.filter(p => p.activeRound).length
+  const { pieces, loading } = useExplore()
+  const activeCount = pieces.filter(p => p.activeRound?.status === 'Voting').length
 
   return (
     <main className="min-h-screen pt-20 pb-24">
@@ -36,16 +22,31 @@ export default function Explore() {
         >
           <h1 className="font-serif text-4xl text-parchment mb-2">Stories</h1>
           <p className="text-parchment/40 text-sm">
-            {activeCount} rounds open · {DEMO_PIECES_EXPLORE.length} pieces
+            {loading ? 'Loading…' : `${activeCount} rounds open · ${pieces.length} pieces`}
           </p>
         </motion.div>
 
+        {/* Loading */}
+        {loading && (
+          <div className="flex items-center justify-center py-20 text-parchment/25">
+            <Loader2 size={18} className="animate-spin mr-2" />
+            <span className="text-sm">Fetching from chain…</span>
+          </div>
+        )}
+
         {/* Feed */}
-        <div className="divide-y divide-parchment/6">
-          {DEMO_PIECES_EXPLORE.map((piece, i) => (
-            <PieceRow key={piece.id} piece={piece} index={i} />
-          ))}
-        </div>
+        {!loading && (
+          <div className="divide-y divide-parchment/6">
+            {pieces.map((piece, i) => (
+              <PieceRow key={piece.id} piece={piece} index={i} />
+            ))}
+            {pieces.length === 0 && (
+              <p className="py-12 text-center text-parchment/25 text-sm">
+                No pieces on-chain yet. Be the first to start a story.
+              </p>
+            )}
+          </div>
+        )}
 
         {/* CTA */}
         <motion.div
@@ -67,14 +68,12 @@ export default function Explore() {
   )
 }
 
-function PieceRow({
-  piece,
-  index,
-}: {
-  piece: (typeof DEMO_PIECES_EXPLORE)[0]
-  index: number
-}) {
-  const hook = PIECE_HOOKS[piece.id]
+function PieceRow({ piece, index }: { piece: ExplorePiece; index: number }) {
+  const isVoting   = piece.activeRound?.status === 'Voting'
+  const isComplete = piece.status === 'Complete'
+  const creatorShort = piece.creator
+    ? `${piece.creator.slice(0, 4)}…${piece.creator.slice(-4)}`
+    : 'unknown'
 
   return (
     <motion.div
@@ -84,18 +83,14 @@ function PieceRow({
     >
       <Link to={`/piece/${piece.id}`}>
         <div className="group py-7 cursor-pointer">
-          {/* Genre + status row */}
+          {/* Status row */}
           <div className="flex items-center gap-3 mb-3 text-xs">
-            <span className={clsx('font-medium', GENRE_STYLES[piece.genre] || 'text-parchment/35')}>
-              {piece.genre}
-            </span>
-            <span className="text-parchment/20">·</span>
-            {piece.activeRound ? (
+            {isVoting ? (
               <span className="flex items-center gap-1.5 text-green-400/80">
                 <div className="live-dot scale-75" />
                 Round open
               </span>
-            ) : piece.status === 'Complete' ? (
+            ) : isComplete ? (
               <span className="flex items-center gap-1 text-parchment/25">
                 <Lock size={10} />
                 Complete
@@ -110,22 +105,17 @@ function PieceRow({
             {piece.title}
           </h2>
 
-          {/* Hook line */}
-          {hook && (
-            <p className="font-serif italic text-parchment/35 text-[15px] leading-relaxed mb-4 line-clamp-2">
-              {hook}
-            </p>
-          )}
-
           {/* Meta + cta */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 text-xs text-parchment/30">
-              <span>by {piece.creator}</span>
+              <span>by {creatorShort}</span>
               <span>{piece.paragraphCount} parts sealed</span>
-              <span>{piece.totalVotes.toLocaleString()} votes</span>
+              {piece.totalVotes > 0 && (
+                <span>{piece.totalVotes.toLocaleString()} votes</span>
+              )}
             </div>
             <div className="flex items-center gap-1 text-xs text-parchment/25 group-hover:text-gold/60 transition-colors">
-              <span>{piece.activeRound ? 'Read & vote' : 'Read'}</span>
+              <span>{isVoting ? 'Read & vote' : 'Read'}</span>
               <ArrowUpRight size={12} />
             </div>
           </div>

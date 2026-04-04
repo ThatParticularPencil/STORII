@@ -1,32 +1,17 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Lock, ArrowRight, Share2, CheckCircle2, BarChart2 } from 'lucide-react'
+import { Lock, ArrowRight, Share2, CheckCircle2, BarChart2, Loader2 } from 'lucide-react'
 import { useRole } from '@/context/RoleContext'
 import SealedParagraphCard from '@/components/SealedParagraphCard'
 import OnChainRecord from '@/components/OnChainRecord'
 import RoundTimer from '@/components/RoundTimer'
-import { DEMO_PARAGRAPHS, DEMO_ACTIVE_ROUND, DEMO_CHAIN_RECORD, DEMO_PIECE } from '@/utils/demo-data'
+import { usePiece } from '@/hooks/usePiece'
+import { DEMO_CHAIN_RECORD } from '@/utils/demo-data'
 import { PublicKey } from '@solana/web3.js'
 import type { SealedParagraph } from '@/types'
 
 const MAX_PARAGRAPHS = 8
-
-const TYPED_PARAGRAPHS: (SealedParagraph & { content: string; authorHandle: string })[] =
-  DEMO_PARAGRAPHS.map((p) => ({
-    publicKey: PublicKey.default,
-    piece: PublicKey.default,
-    index: p.index,
-    contentHash: new Uint8Array(32),
-    arweaveUri: p.arweaveUri,
-    author: PublicKey.default,
-    sealedAt: Math.floor(p.sealedAt / 1000),
-    voteCount: p.voteCount,
-    isOpening: p.isOpening,
-    content: p.content,
-    authorHandle: p.authorHandle,
-    winningDirection: (p as any).winningDirection,
-  }))
 
 export default function PieceView() {
   const { pieceId } = useParams()
@@ -36,10 +21,48 @@ export default function PieceView() {
   const { role } = useRole()
   const isCreator = role === 'creator'
 
-  const piece = DEMO_PIECE
-  const paragraphs = TYPED_PARAGRAPHS
-  const activeRound = DEMO_ACTIVE_ROUND
+  const { piece, loading, error } = usePiece(pieceId)
+
+  // ── Loading state ──────────────────────────────────────────────────────────
+
+  if (loading) {
+    return (
+      <main className="min-h-screen pt-14 pb-24 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-parchment/30">
+          <Loader2 size={20} className="animate-spin" />
+          <p className="text-sm">Loading from chain…</p>
+        </div>
+      </main>
+    )
+  }
+
+  if (!piece) {
+    return (
+      <main className="min-h-screen pt-14 pb-24 flex items-center justify-center">
+        <p className="text-parchment/30 text-sm">Piece not found on chain.</p>
+      </main>
+    )
+  }
+
   const isComplete = piece.paragraphCount >= MAX_PARAGRAPHS
+  const activeRound = piece.activeRound
+
+  // Convert usePiece paragraphs to the SealedParagraphCard shape
+  const paragraphs = piece.paragraphs.map(p => ({
+    publicKey: PublicKey.default,
+    piece:     PublicKey.default,
+    index:     p.index,
+    contentHash: new Uint8Array(32),
+    arweaveUri:  p.arweaveUri,
+    author:      PublicKey.default,
+    sealedAt:    p.sealedAt,
+    voteCount:   p.voteCount,
+    isOpening:   p.isOpening,
+    // Off-chain extras
+    content:          (p as any).content,
+    authorHandle:     (p as any).authorHandle,
+    winningDirection: (p as any).winningDirection,
+  } as SealedParagraph & { content: string | null; authorHandle?: string; winningDirection?: string }))
 
   return (
     <main className="min-h-screen pt-14 pb-24">
@@ -53,7 +76,9 @@ export default function PieceView() {
         >
           <div className="flex items-start justify-between gap-4 mb-5">
             <div className="flex-1">
-              <p className="text-xs text-parchment/30 mb-2">by {piece.creatorHandle}</p>
+              <p className="text-xs text-parchment/30 mb-2">
+                by {piece.creatorHandle ?? `${piece.creator.slice(0, 4)}…${piece.creator.slice(-4)}`}
+              </p>
               <h1 className="font-serif text-3xl md:text-4xl text-parchment leading-snug">
                 {piece.title}
               </h1>
@@ -67,9 +92,8 @@ export default function PieceView() {
             </button>
           </div>
 
-          {/* Progress + meta */}
+          {/* Part progress bar */}
           <div className="space-y-3">
-            {/* Part progress bar */}
             <div>
               <div className="flex items-center justify-between text-xs text-parchment/30 mb-1.5">
                 <span>{piece.paragraphCount} of {MAX_PARAGRAPHS} parts sealed</span>
@@ -92,6 +116,9 @@ export default function PieceView() {
                 <Lock size={9} />
                 {piece.roundCount} rounds
               </span>
+              {error && (
+                <span className="text-amber-400/50">⚠ Chain read error — showing cached data</span>
+              )}
             </div>
           </div>
 
@@ -122,6 +149,20 @@ export default function PieceView() {
                 <Link to={`/piece/${pieceId}/round/${activeRound.roundIndex}`}>
                   <button className="flex items-center gap-1.5 text-xs text-gold/70 hover:text-gold transition-colors font-medium">
                     Vote now
+                    <ArrowRight size={12} />
+                  </button>
+                </Link>
+              )}
+            </div>
+          )}
+
+          {!isComplete && activeRound && activeRound.status === 'Submissions' && (
+            <div className="mt-4 flex items-center justify-between p-3 rounded-xl border border-parchment/10 bg-parchment/[0.02]">
+              <RoundTimer deadline={activeRound.submissionDeadline} label="Submissions close" />
+              {!isCreator && (
+                <Link to={`/piece/${pieceId}/round/${activeRound.roundIndex}`}>
+                  <button className="flex items-center gap-1.5 text-xs text-gold/70 hover:text-gold transition-colors font-medium">
+                    Submit direction
                     <ArrowRight size={12} />
                   </button>
                 </Link>
@@ -190,7 +231,7 @@ export default function PieceView() {
             <div>
               <p className="text-xs text-parchment/30 mb-1">Blockchain record</p>
               <p className="font-serif text-parchment/70 group-hover:text-parchment transition-colors">
-                On-chain proof for Part 3
+                On-chain proof for Part {piece.paragraphCount}
               </p>
             </div>
             <ArrowRight
@@ -199,7 +240,24 @@ export default function PieceView() {
             />
           </button>
 
-          {showDetails && <OnChainRecord record={DEMO_CHAIN_RECORD} />}
+          {showDetails && (() => {
+            const lastPara = piece.paragraphs[piece.paragraphs.length - 1]
+            return (
+              <OnChainRecord record={{
+                pieceTitle:     piece.title,
+                paragraphIndex: piece.paragraphCount,
+                totalParagraphs: MAX_PARAGRAPHS,
+                authorWallet:   lastPara?.authorHandle ?? DEMO_CHAIN_RECORD.authorWallet,
+                votesReceived:  lastPara?.voteCount ?? DEMO_CHAIN_RECORD.votesReceived,
+                totalVotesCast: activeRound?.totalVotes ?? DEMO_CHAIN_RECORD.totalVotesCast,
+                sealedBlock:    DEMO_CHAIN_RECORD.sealedBlock,
+                sealedAt:       DEMO_CHAIN_RECORD.sealedAt,
+                contentHash:    lastPara ? `${lastPara.arweaveUri.slice(0, 20)}…` : DEMO_CHAIN_RECORD.contentHash,
+                arweaveUri:     lastPara?.arweaveUri ?? DEMO_CHAIN_RECORD.arweaveUri,
+                programId:      DEMO_CHAIN_RECORD.programId,
+              }} />
+            )
+          })()}
         </div>
       </div>
     </main>

@@ -1,8 +1,9 @@
 /**
  * In-memory vote state store.
- * In production this would be backed by a database,
- * but for the hackathon demo it runs in-memory and is
- * seeded with demo data.
+ *
+ * In demo mode this is seeded with fake data.
+ * In production, it is populated by the Solana on-chain listener in solana.ts,
+ * which decodes real Submission account changes and calls setVoteCount().
  */
 
 interface SubmissionState {
@@ -64,6 +65,8 @@ export class VoteStore {
     return this.rounds.get(roundId)
   }
 
+  // ── Called by the Socket.io vote:cast event (demo frontend path) ─────────────
+
   recordVote(
     roundId: string,
     submissionId: string
@@ -77,10 +80,44 @@ export class VoteStore {
     submission.voteCount++
     round.totalVotes++
 
-    return {
-      submissionCount: submission.voteCount,
-      totalVotes: round.totalVotes,
+    return { submissionCount: submission.voteCount, totalVotes: round.totalVotes }
+  }
+
+  // ── Called by the real Solana on-chain listener (production path) ────────────
+
+  /**
+   * Directly sets a submission's vote count (decoded from chain data).
+   * Recalculates round.totalVotes from the sum of all submission counts.
+   */
+  setVoteCount(
+    roundId: string,
+    submissionId: string,
+    count: number
+  ): { submissionCount: number; totalVotes: number } | null {
+    let round = this.rounds.get(roundId)
+
+    // Auto-create a round entry if the listener sees it for the first time
+    if (!round) {
+      round = {
+        roundId,
+        pieceId: '',
+        status: 'voting',
+        totalVotes: 0,
+        submissions: [],
+      }
+      this.rounds.set(roundId, round)
     }
+
+    let sub = round.submissions.find(s => s.id === submissionId)
+    if (!sub) {
+      sub = { id: submissionId, content: '', contributor: '', contributorHandle: '', voteCount: 0 }
+      round.submissions.push(sub)
+    }
+
+    sub.voteCount = count
+    round.totalVotes = round.submissions.reduce((t, s) => t + s.voteCount, 0)
+
+    return { submissionCount: sub.voteCount, totalVotes: round.totalVotes }
   }
 
   upsertRound(state: RoundState) {
@@ -93,7 +130,7 @@ export class VoteStore {
     round.submissions.push(submission)
   }
 
-  closeRound(roundId: string, winningSubmissionId: string) {
+  closeRound(roundId: string) {
     const round = this.rounds.get(roundId)
     if (!round) return
     round.status = 'closed'
