@@ -1,0 +1,194 @@
+{
+  "address": "ahWw6JRQVTsE5NQoEJC7kXcE5ZYU3KZS6jEU9V7mx15",
+  "metadata": {
+    "name": "storylock",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Storylock — collaborative writing sealed on Solana"
+  },
+  "instructions": [
+    {
+      "name": "create_piece",
+      "discriminator": [145, 99, 247, 162, 52, 77, 2, 56],
+      "accounts": [
+        { "name": "piece", "writable": true, "pda": { "seeds": [{ "kind": "const", "value": [112, 105, 101, 99, 101] }, { "kind": "account", "path": "creator" }, { "kind": "arg", "path": "title" }] } },
+        { "name": "opening_paragraph", "writable": true, "pda": { "seeds": [{ "kind": "const", "value": [112, 97, 114, 97, 103, 114, 97, 112, 104] }, { "kind": "account", "path": "piece" }, { "kind": "const", "value": [0, 0, 0, 0] }] } },
+        { "name": "creator", "writable": true, "signer": true },
+        { "name": "system_program", "address": "11111111111111111111111111111111" }
+      ],
+      "args": [
+        { "name": "title", "type": "string" },
+        { "name": "opening_hash", "type": { "array": ["u8", 32] } },
+        { "name": "opening_arweave_uri", "type": "string" }
+      ]
+    },
+    {
+      "name": "open_round",
+      "discriminator": [201, 34, 168, 55, 141, 11, 99, 207],
+      "accounts": [
+        { "name": "round", "writable": true },
+        { "name": "piece", "writable": true },
+        { "name": "creator", "writable": true, "signer": true },
+        { "name": "system_program", "address": "11111111111111111111111111111111" }
+      ],
+      "args": [
+        { "name": "submission_duration_secs", "type": "i64" },
+        { "name": "voting_duration_secs", "type": "i64" },
+        { "name": "max_submissions", "type": "u16" }
+      ]
+    },
+    {
+      "name": "submit_paragraph",
+      "discriminator": [78, 234, 15, 89, 212, 44, 133, 7],
+      "accounts": [
+        { "name": "submission", "writable": true },
+        { "name": "round", "writable": true },
+        { "name": "subscriber_record", "writable": true },
+        { "name": "piece" },
+        { "name": "contributor", "writable": true, "signer": true },
+        { "name": "system_program", "address": "11111111111111111111111111111111" }
+      ],
+      "args": [
+        { "name": "content_hash", "type": { "array": ["u8", 32] } },
+        { "name": "arweave_uri", "type": "string" }
+      ]
+    },
+    {
+      "name": "cast_vote",
+      "discriminator": [20, 212, 15, 127, 216, 77, 138, 59],
+      "accounts": [
+        { "name": "vote", "writable": true, "pda": { "seeds": [{ "kind": "const", "value": [118, 111, 116, 101] }, { "kind": "account", "path": "round" }, { "kind": "account", "path": "voter" }] } },
+        { "name": "round", "writable": true },
+        { "name": "submission", "writable": true },
+        { "name": "subscriber_record", "writable": true },
+        { "name": "piece" },
+        { "name": "voter", "writable": true, "signer": true },
+        { "name": "system_program", "address": "11111111111111111111111111111111" }
+      ],
+      "args": []
+    },
+    {
+      "name": "close_round",
+      "discriminator": [189, 125, 244, 33, 97, 156, 44, 209],
+      "accounts": [
+        { "name": "sealed_paragraph", "writable": true },
+        { "name": "round", "writable": true },
+        { "name": "winning_submission", "writable": true },
+        { "name": "piece", "writable": true },
+        { "name": "creator", "writable": true, "signer": true },
+        { "name": "system_program", "address": "11111111111111111111111111111111" }
+      ],
+      "args": [
+        { "name": "winning_submission_key", "type": "pubkey" },
+        { "name": "creator_note", "type": "string" }
+      ]
+    },
+    {
+      "name": "add_subscriber",
+      "discriminator": [111, 213, 234, 18, 6, 99, 237, 192],
+      "accounts": [
+        { "name": "subscriber_record", "writable": true },
+        { "name": "piece" },
+        { "name": "creator", "writable": true, "signer": true },
+        { "name": "subscriber" },
+        { "name": "system_program", "address": "11111111111111111111111111111111" }
+      ],
+      "args": [
+        { "name": "tier", "type": { "defined": { "name": "subscriber_tier" } } }
+      ]
+    },
+    {
+      "name": "complete_piece",
+      "discriminator": [234, 89, 44, 177, 203, 12, 56, 91],
+      "accounts": [
+        { "name": "piece", "writable": true },
+        { "name": "creator", "writable": true, "signer": true }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Piece",
+      "discriminator": [12, 54, 178, 23, 89, 144, 201, 67]
+    },
+    {
+      "name": "Round",
+      "discriminator": [45, 123, 201, 8, 66, 177, 234, 99]
+    },
+    {
+      "name": "Submission",
+      "discriminator": [78, 201, 34, 156, 44, 211, 89, 123]
+    },
+    {
+      "name": "Vote",
+      "discriminator": [99, 234, 55, 178, 201, 12, 67, 145]
+    },
+    {
+      "name": "SealedParagraph",
+      "discriminator": [123, 56, 201, 89, 34, 177, 12, 234]
+    },
+    {
+      "name": "SubscriberRecord",
+      "discriminator": [201, 89, 34, 123, 177, 56, 234, 12]
+    }
+  ],
+  "types": [
+    {
+      "name": "piece_status",
+      "type": {
+        "kind": "enum",
+        "variants": [{ "name": "Active" }, { "name": "Complete" }]
+      }
+    },
+    {
+      "name": "round_status",
+      "type": {
+        "kind": "enum",
+        "variants": [{ "name": "Submissions" }, { "name": "Voting" }, { "name": "Closed" }]
+      }
+    },
+    {
+      "name": "subscriber_tier",
+      "type": {
+        "kind": "enum",
+        "variants": [{ "name": "InnerCircle" }, { "name": "Community" }, { "name": "Reader" }]
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "PieceCreated",
+      "discriminator": [44, 178, 89, 201, 12, 56, 234, 99]
+    },
+    {
+      "name": "RoundOpened",
+      "discriminator": [99, 44, 178, 56, 201, 89, 234, 12]
+    },
+    {
+      "name": "VoteCast",
+      "discriminator": [56, 201, 89, 44, 99, 178, 12, 234]
+    },
+    {
+      "name": "RoundClosed",
+      "discriminator": [12, 89, 201, 178, 234, 56, 44, 99]
+    }
+  ],
+  "errors": [
+    { "code": 6000, "name": "Unauthorized", "msg": "Only the piece creator can perform this action" },
+    { "code": 6001, "name": "PieceNotActive", "msg": "Piece is not active" },
+    { "code": 6002, "name": "TitleTooLong", "msg": "Title exceeds maximum length" },
+    { "code": 6003, "name": "UriTooLong", "msg": "Arweave URI exceeds maximum length" },
+    { "code": 6004, "name": "NoteTooLong", "msg": "Creator note exceeds maximum length" },
+    { "code": 6005, "name": "InvalidDuration", "msg": "Invalid duration — must be greater than zero" },
+    { "code": 6006, "name": "WrongRoundState", "msg": "Round is not in the expected state" },
+    { "code": 6007, "name": "WrongTier", "msg": "Subscriber tier does not permit this action" },
+    { "code": 6008, "name": "InsufficientTokens", "msg": "Subscriber has no tokens remaining for this action" },
+    { "code": 6009, "name": "SubmissionWindowClosed", "msg": "Submission window has closed" },
+    { "code": 6010, "name": "VotingWindowClosed", "msg": "Voting window has closed" },
+    { "code": 6011, "name": "SubmissionLimitReached", "msg": "Maximum submission limit reached for this round" },
+    { "code": 6012, "name": "SubmissionNotInRound", "msg": "Submission does not belong to this round" },
+    { "code": 6013, "name": "SubmissionMismatch", "msg": "Submission key does not match provided key" },
+    { "code": 6014, "name": "TooEarly", "msg": "Action is too early — deadline has not yet passed" }
+  ]
+}

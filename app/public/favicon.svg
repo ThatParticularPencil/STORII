@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#0a0907"/>
+  <!-- Quill -->
+  <path d="M44 10 C50 16, 52 30, 32 42 L28 54 L26 48 C20 52, 16 50, 14 44 C24 40, 36 24, 44 10Z" fill="#c9a84c" opacity="0.9"/>
+  <path d="M28 54 L26 48 L24 50Z" fill="#8a6f2c"/>
+  <!-- Lock -->
+  <rect x="22" y="34" width="20" height="16" rx="3" fill="none" stroke="#c9a84c" stroke-width="2"/>
+  <path d="M26 34 V28 Q32 22 38 28 V34" stroke="#c9a84c" stroke-width="2" fill="none"/>
+</svg>
