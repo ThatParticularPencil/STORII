@@ -10,7 +10,7 @@
 
 export const DEMO_PIECE = {
   id: 'demo-piece-1',
-  title: 'It Was the Night Before the Product Launch',
+  title: 'One More Queue: The Creator Challenge',
   status: 'Active' as const,
   paragraphCount: 3,
   roundCount: 3,
@@ -185,7 +185,7 @@ export const DEMO_ACTIVE_ROUND = {
 }
 
 export const DEMO_CHAIN_RECORD = {
-  pieceTitle: 'It Was the Night Before the Product Launch',
+  pieceTitle: 'One More Queue: The Creator Challenge',
   paragraphIndex: 3,
   totalParagraphs: 12,
   authorWallet: 'nR5c...6dLm',
@@ -201,7 +201,7 @@ export const DEMO_CHAIN_RECORD = {
 export const DEMO_PIECES_EXPLORE = [
   {
     id: 'demo-piece-2',
-    title: 'The Last Summer at the Observatory',
+    title: 'Return to the Observatory: A Creator Documentary',
     paragraphCount: 7,
     roundCount: 7,
     status: 'Active' as const,

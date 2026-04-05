@@ -19,9 +19,9 @@ export default function CreatorDashboard() {
     return (
       <main className="min-h-screen pt-20 flex items-center justify-center px-6">
         <div className="text-center max-w-sm">
-          <p className="font-serif text-2xl text-parchment/80 mb-3">Your dashboard</p>
+          <p className="font-serif text-2xl text-parchment/80 mb-3">Your creator dashboard</p>
           <p className="text-parchment/40 text-sm mb-8 leading-relaxed">
-            Connect your wallet to manage your pieces, see who's reading, and open new rounds.
+            Connect your wallet to manage your video scripts, see audience access, and open new voting rounds.
           </p>
           <WalletMultiButton />
         </div>
@@ -41,7 +41,7 @@ export default function CreatorDashboard() {
         >
           <div>
             <p className="text-xs text-parchment/30 mb-1.5 font-mono">{walletShort}</p>
-            <h1 className="font-serif text-4xl text-parchment">Your pieces</h1>
+            <h1 className="font-serif text-4xl text-parchment">Your video scripts</h1>
           </div>
           <Link to="/new">
             <motion.button
@@ -50,7 +50,7 @@ export default function CreatorDashboard() {
               className="flex items-center gap-2 bg-gold/10 border border-gold/30 text-gold px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gold/20 transition-all"
             >
               <Plus size={14} />
-              New piece
+              New script
             </motion.button>
           </Link>
         </motion.div>
@@ -87,7 +87,7 @@ export default function CreatorDashboard() {
               <div className="py-8 border border-dashed border-parchment/10 rounded-2xl text-center hover:border-parchment/20 transition-colors cursor-pointer group">
                 <Plus size={16} className="mx-auto text-parchment/20 group-hover:text-parchment/40 mb-2 transition-colors" />
                 <p className="text-sm text-parchment/25 group-hover:text-parchment/40 transition-colors">
-                  Start another story
+                  Start another script
                 </p>
               </div>
             </Link>
@@ -134,7 +134,7 @@ function PieceManageCard() {
         </div>
 
         <div className="flex items-center gap-4 text-xs text-parchment/30">
-          <span>{piece.paragraphCount} parts sealed</span>
+            <span>{piece.paragraphCount} scenes sealed</span>
           <span>·</span>
           <span>{piece.roundCount} rounds total</span>
         </div>
@@ -143,7 +143,7 @@ function PieceManageCard() {
           <div className="mt-5 p-4 rounded-xl border border-gold/20 bg-gold/[0.04]">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles size={12} className="text-gold/70" />
-              <span className="text-xs uppercase tracking-widest text-gold/60">Latest sealed scene</span>
+              <span className="text-xs uppercase tracking-widest text-gold/60">Latest sealed script beat</span>
             </div>
             <p className="text-sm font-serif text-parchment/80 leading-7">
               {latestParagraph.content}

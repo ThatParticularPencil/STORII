@@ -97,8 +97,14 @@ export async function sendSolPayment(
   wallet: WalletContextState,
   amountSol: number
 ): Promise<string> {
+  if (!wallet.publicKey) {
+    if (wallet.wallet && wallet.connect) {
+      await wallet.connect()
+    }
+  }
+
   if (!wallet.publicKey || !wallet.sendTransaction) {
-    throw new Error('Wallet not connected')
+    throw new Error('Connect a Solana wallet before voting')
   }
 
   const lamports = Math.round(amountSol * LAMPORTS_PER_SOL)

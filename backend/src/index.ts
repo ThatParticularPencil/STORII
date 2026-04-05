@@ -104,20 +104,20 @@ function seedDemoData() {
   // ── Demo 1 — RUNOFF stage in Round 1 (Product Launch) ───────────────────
   const p1 = pieceStore.createPiece({
     id: 'demo-live-1',
-    title: 'It Was the Night Before the Product Launch',
+    title: 'One More Queue: The Creator Challenge',
     creator: '8HQpXR2k...3xRt',
-    openingText: 'It was the night before the product launch and everything was about to go wrong. Sarah stared at the terminal output, the cursor blinking like a nervous heartbeat. Three hours until the presentation. Fourteen minutes of deployment logs. And somewhere in that wall of green text, the reason their entire authentication service had just gone silent.',
+    openingText: 'Create the opening for a gaming creator challenge video. The creator is about to attempt a high-pressure Valorant-style challenge live with their audience watching, clips rolling, and chat suggesting what the rules should be. Set up the creator on stream, the challenge stakes, and the kind of opening tension that makes viewers want to vote on what happens next.',
     submissionHours: 0.001,
     votingHours: 0.001,
     maxSubmissions: 20,
   })
   ;[
-    { contributor: '5pNm...8kLj', content: 'Cut to the whole team watching the dashboard refresh. Nobody speaks. The on-call Slack goes silent. Someone outside — a journalist — is already writing the story of the failed launch.' },
-    { contributor: '2wXq...5mRo', content: 'Reveal it was the intern who rotated the deploy keys during the security audit. She didn\'t update the env variables. Her hand is half-raised, voice barely audible. The room temperature drops.' },
-    { contributor: '9cYs...3vPt', content: 'VP calls in on speakerphone. He gives them twenty minutes. Cold voice, past anger. In the background before he hangs up the CEO can be heard asking what "rollback" means.' },
-    { contributor: 'nR5c...6dLm', content: 'Show the junior dev who flagged this exact line in code review three weeks ago. Closed as "won\'t fix". He hasn\'t said a word since the terminal went red.' },
-    { contributor: 'fT8j...0xBu', content: 'The staging environment is fine. It\'s only production that\'s silent. Sarah realises the logs show a config that shouldn\'t exist — one she didn\'t write.' },
-    { contributor: 'qZ7m...4tPy', content: 'Sarah\'s phone buzzes: a calendar invite from a blocked number. "Post-mortem" — dated three days ago. Someone knew.' },
+    { contributor: '5pNm...8kLj', content: 'Have chat vote on the challenge rule: the creator can only use sheriff and vandal for the whole match.' },
+    { contributor: '2wXq...5mRo', content: 'Start with the creator explaining they need to win three ranked rounds in a row or they have to do a brutal forfeit live.' },
+    { contributor: '9cYs...3vPt', content: 'A natural viewer idea: open on the stream overlay with chat spamming suggested agents and challenge modifiers.' },
+    { contributor: 'nR5c...6dLm', content: 'Make the first twist that the creator’s duo is late, so they have to solo queue the challenge in front of everyone.' },
+    { contributor: 'fT8j...0xBu', content: 'Show the creator revealing the punishment wheel for if they lose the opening match.' },
+    { contributor: 'qZ7m...4tPy', content: 'Open with the creator asking chat whether they should lock Jett for content or play safe and pick their best agent.' },
   ].forEach(s => pieceStore.addSubmission({ pieceId: p1.id, roundIndex: 0, contributor: s.contributor, content: s.content, contentHash: s.contributor }))
 
   const r1 = p1.rounds.get(0)!
@@ -139,19 +139,21 @@ function seedDemoData() {
   // ── Demo 2 — SUBMISSIONS stage in Round 1 (Observatory) ──────────────────
   const p2 = pieceStore.createPiece({
     id: 'demo-live-2',
-    title: 'The Last Summer at the Observatory',
+    title: 'Return to the Observatory: A Creator Documentary',
     creator: '@stargazer_mila',
-    openingText: 'The dome had not been opened in eleven years. Mila pressed her palm against the cold steel hatch and felt the old mechanism shudder — not quite stuck, not quite willing. The last person to look through this telescope had gone up one August evening and never come back down. Nobody talked about that. The grant committee certainly hadn\'t.',
+    openingText: 'Create the opening for a documentary-style creator story. Mila is an independent creator returning to an abandoned observatory to film a comeback video for her audience. She wants to uncover what happened there, capture beautiful visuals, and decide what lead to follow first with the help of viewer suggestions. Make it feel like a real creator documentary setup where the audience would naturally comment ideas about where she should go next.',
     submissionHours: 0.001,
     votingHours: 0.001,
     maxSubmissions: 20,
   })
   ;[
-    { contributor: 'nR5c...6dLm', content: 'Show what Mila finds on the telescope\'s notepad. The last observer left coordinates — not for any star in any catalogue. Something hand-calculated, obsessively corrected.' },
-    { contributor: 'fT8j...0xBu', content: 'Cut to the grant committee files. One page is redacted. The name of the last observer has been replaced with a case number. Mila recognises the handwriting on the sticky note flagging it.' },
-    { contributor: 'qZ7m...4tPy', content: 'The dome motor starts on its own. Not the hatch — the main rotation drive. Something up there is still running on the old schedule.' },
-    { contributor: 'hV2k...9wQs', content: 'Show the logbook from eleven years ago. Every entry is meticulous science until the last week, where the handwriting changes — smaller, faster, like something was being hidden inside the margin.' },
-    { contributor: '7tKp...2nWz', content: 'The dome opens on a sky that doesn\'t match the date. The stars are wrong. Not by much — by exactly eleven years.' },
+    { contributor: 'nR5c...6dLm', content: 'A viewer suggestion: have Mila start by checking the old control room because that is where the best documentary clues would probably still be.' },
+    { contributor: 'fT8j...0xBu', content: 'Show Mila finding a box of tapes or memory cards that could completely change what the video is actually about.' },
+    { contributor: 'qZ7m...4tPy', content: 'Have her pause and ask the audience whether she should follow the strange sound from upstairs or open the locked storage cabinet first.' },
+    { contributor: 'hV2k...9wQs', content: 'Start the next beat with Mila reading from the old logbook on camera like she is pulling the audience deeper into the mystery.' },
+    { contributor: '7tKp...2nWz', content: 'Make the visual hook that the dome finally opens and she captures a shot so good she knows the comeback video might actually work.' },
+    { contributor: '4sLm...6qAe', content: 'Have Mila discover a note left for whoever filmed here next, making it feel like the previous creator or observer expected an audience someday.' },
+    { contributor: '8uNa...4pRx', content: 'Let chat-style audience energy come through by having Mila decide between three possible leads and promise she will follow whichever one feels most important.' },
   ].forEach(s => pieceStore.addSubmission({ pieceId: p2.id, roundIndex: 0, contributor: s.contributor, content: s.content, contentHash: s.contributor }))
 
   const r2 = p2.rounds.get(0)!

@@ -18,14 +18,14 @@ export default function Navbar() {
 
   const handleSwitchRole = () => {
     clearRole()
-    navigate('/')
+    navigate('/role')
   }
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-ink-900/90 backdrop-blur-md">
       <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
         {/* Logo */}
-        <Link to={role === 'viewer' ? '/explore' : '/'} className="flex items-center gap-2.5 group">
+        <Link to="/" className="flex items-center gap-2.5 group">
           <div className="w-6 h-6 flex items-center justify-center -translate-y-[2px]">
             <LockQuillIcon />
           </div>

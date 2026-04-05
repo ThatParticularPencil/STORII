@@ -37,13 +37,14 @@ function AppRoutes() {
           {/* ── Viewer routes — read + vote, cannot create ────────────── */}
           {role === 'viewer' && (
             <>
+              <Route path="/"                                      element={<Landing />} />
+              <Route path="/role"                                  element={<RoleGate />} />
               <Route path="/explore"                               element={<Explore />} />
               <Route path="/piece/:pieceId"                        element={<PieceView />} />
               <Route path="/piece/:pieceId/round/:roundIndex"      element={<RoundView />} />
               {/* Redirect creator-only paths */}
               <Route path="/new"                                   element={<Navigate to="/explore" replace />} />
               <Route path="/dashboard"                             element={<Navigate to="/explore" replace />} />
-              <Route path="/"                                      element={<Navigate to="/explore" replace />} />
               <Route path="*"                                      element={<Navigate to="/explore" replace />} />
             </>
           )}
@@ -51,7 +52,8 @@ function AppRoutes() {
           {/* ── Creator routes — dashboard + write, cannot vote ──────── */}
           {role === 'creator' && (
             <>
-              <Route path="/"                                                element={<Navigate to="/dashboard" replace />} />
+              <Route path="/"                                                element={<Landing />} />
+              <Route path="/role"                                            element={<RoleGate />} />
               <Route path="/dashboard"                                       element={<CreatorDashboard />} />
               <Route path="/new"                                             element={<NewPiece />} />
               <Route path="/piece/:pieceId"                                  element={<PieceView />} />

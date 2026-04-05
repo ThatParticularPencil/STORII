@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRight, Sun, Moon, Lock, Sparkles } from 'lucide-react'
 import { DottedSurface } from '@/components/ui/dotted-surface'
 import { useTheme } from '@/context/ThemeContext'
@@ -23,12 +23,12 @@ export default function Landing() {
 
       {/* Top wordmark + theme toggle */}
       <header className="relative z-10 px-8 pt-8 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <div className="w-6 h-6 flex items-center justify-center -translate-y-[2px]">
             <LockQuillIcon />
           </div>
           <span className="font-serif text-lg leading-none font-semibold text-parchment/70 tracking-tight">Storii</span>
-        </div>
+        </Link>
         <button
           onClick={toggle}
           className="flex items-center justify-center w-8 h-8 rounded-full border border-parchment/10 hover:border-parchment/25 text-parchment/40 hover:text-parchment/70 transition-all duration-200"

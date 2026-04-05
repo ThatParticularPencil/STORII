@@ -160,7 +160,7 @@ function StageBar({ roundStatus, uiPhase }: { roundStatus: RoundStatus; uiPhase:
 // ── Direction card ─────────────────────────────────────────────────────────────
 
 function DirectionCard({
-  sub, totalVotes, rank, isOwn, hasVoted, votedFor, canVote, onVote, index, useRunoffVotes,
+  sub, totalVotes, rank, isOwn, hasVoted, votedFor, canVote, onVote, index, useRunoffVotes, walletConnected,
 }: {
   sub: Submission
   totalVotes: number
@@ -172,6 +172,7 @@ function DirectionCard({
   onVote: (id: string) => void
   index: number
   useRunoffVotes: boolean
+  walletConnected: boolean
 }) {
   const votes      = useRunoffVotes ? sub.runoffVoteCount : sub.voteCount
   const pct        = totalVotes > 0 ? (votes / totalVotes) * 100 : 0
@@ -246,6 +247,10 @@ function DirectionCard({
         isOwn ? (
           <div className="w-full h-9 rounded-full border border-parchment/8 text-parchment/20 text-xs text-center flex items-center justify-center gap-1.5">
             <Ban size={10} /> Can't vote for your own idea
+          </div>
+        ) : !walletConnected ? (
+          <div className="w-full h-9 rounded-full border border-parchment/10 bg-parchment/[0.02] text-parchment/35 text-xs text-center flex items-center justify-center gap-1.5">
+            <Lock size={10} /> Connect wallet to vote
           </div>
         ) : (
           <div>
@@ -415,7 +420,7 @@ export default function RoundView() {
         }
       })
       .catch(() => {
-        setPieceTitle('It Was the Night Before the Product Launch')
+        setPieceTitle('One More Queue: The Creator Challenge')
         setParagraphs([{ index: 0, content: 'It was the night before the product launch and everything was about to go wrong…' }])
         setRoundStatus('Voting')
         setTotalVotes(408)
@@ -812,7 +817,7 @@ She starts typing anyway.`,
               <div className="flex items-center gap-2 text-xs text-parchment/30 mb-5"><Clock size={11} /><span>Waiting for submissions to close — voting opens automatically</span></div>
               <div className="space-y-4">
                 {pool.map((sub, i) => (
-                  <DirectionCard key={sub.id} sub={sub} totalVotes={0} rank={i} isOwn={sub.id === mySubmissionId} hasVoted={false} votedFor={null} canVote={false} onVote={() => {}} index={i} useRunoffVotes={false} />
+                  <DirectionCard key={sub.id} sub={sub} totalVotes={0} rank={i} isOwn={sub.id === mySubmissionId} hasVoted={false} votedFor={null} canVote={false} onVote={() => {}} index={i} useRunoffVotes={false} walletConnected={!!publicKey} />
                 ))}
               </div>
             </motion.div>
@@ -833,10 +838,19 @@ She starts typing anyway.`,
                   </p>
                 </div>
               </div>
+              {!publicKey && (
+                <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-parchment/12 bg-parchment/[0.03] mb-5 flex-wrap">
+                  <div>
+                    <p className="text-sm font-medium text-parchment">Connect a wallet to cast a paid vote</p>
+                    <p className="text-parchment/45 text-xs mt-1">Voting costs 0.025 SOL plus network fees, and the wallet prompt appears when you vote.</p>
+                  </div>
+                  <WalletMultiButton />
+                </div>
+              )}
               {payError && <div className="flex items-start gap-2 p-3 rounded-lg bg-red-400/5 border border-red-400/15 mb-5 text-xs text-red-400/80"><AlertCircle size={13} className="mt-0.5 flex-shrink-0" />{payError}</div>}
               <div className="space-y-4 mb-8">
                 {firstRoundSorted.map((sub, i) => (
-                  <DirectionCard key={sub.id} sub={sub} totalVotes={totalVotes} rank={i} isOwn={sub.id === mySubmissionId} hasVoted={hasVoted} votedFor={votedFor} canVote={canFirstVote} onVote={handleFirstVote} index={i} useRunoffVotes={false} />
+                  <DirectionCard key={sub.id} sub={sub} totalVotes={totalVotes} rank={i} isOwn={sub.id === mySubmissionId} hasVoted={hasVoted} votedFor={votedFor} canVote={canFirstVote} onVote={handleFirstVote} index={i} useRunoffVotes={false} walletConnected={!!publicKey} />
                 ))}
               </div>
               <AnimatePresence>
@@ -882,13 +896,22 @@ She starts typing anyway.`,
                   </p>
                 </div>
               </div>
+              {!publicKey && (
+                <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-parchment/12 bg-parchment/[0.03] mb-5 flex-wrap">
+                  <div>
+                    <p className="text-sm font-medium text-parchment">Connect a wallet to join the runoff</p>
+                    <p className="text-parchment/45 text-xs mt-1">The runoff vote also charges 0.025 SOL plus network fees before the vote is recorded.</p>
+                  </div>
+                  <WalletMultiButton />
+                </div>
+              )}
               {payError && <div className="flex items-start gap-2 p-3 rounded-lg bg-red-400/5 border border-red-400/15 mb-5 text-xs text-red-400/80"><AlertCircle size={13} className="mt-0.5 flex-shrink-0" />{payError}</div>}
               <div className="space-y-4 mb-8">
                 {runoffSubs.length === 0 && (
                   <p className="text-center py-6 text-parchment/25 text-sm">Calculating top 5 finalists…</p>
                 )}
                 {runoffSubs.map((sub, i) => (
-                  <DirectionCard key={sub.id} sub={sub} totalVotes={totalRunoffVotes} rank={i} isOwn={sub.id === mySubmissionId} hasVoted={hasRunoffVoted} votedFor={runoffVotedFor} canVote={canRunoffVote} onVote={handleRunoffVote} index={i} useRunoffVotes={true} />
+                  <DirectionCard key={sub.id} sub={sub} totalVotes={totalRunoffVotes} rank={i} isOwn={sub.id === mySubmissionId} hasVoted={hasRunoffVoted} votedFor={runoffVotedFor} canVote={canRunoffVote} onVote={handleRunoffVote} index={i} useRunoffVotes={true} walletConnected={!!publicKey} />
                 ))}
               </div>
             </motion.div>
